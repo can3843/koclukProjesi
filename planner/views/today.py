@@ -22,12 +22,12 @@ from planner.services import (
 MAX_INFO_CARDS = 2
 RING_LENGTH = 213.63  # circumference of the progress ring in the SVG (2 * pi * 34)
 DEFAULT_COLOR = "#5B5BD6"
-KIND_ICONS = {"learn": "📖", "practice": "✏️", "review": "🔁", "mock": "📝", "mock_review": "🔍"}
-PEAK_LABELS = {
-    StudentProfile.PeakTime.MORNING: "☀️ Sabah ilk iş",
-    StudentProfile.PeakTime.NOON: "🌤️ Öğle verimli saatinde",
-    StudentProfile.PeakTime.EVENING: "🌆 Akşam verimli saatinde",
-    StudentProfile.PeakTime.NIGHT: "🌙 Gece verimli saatinde",
+KIND_ICONS = {"learn": "book", "practice": "pencil", "review": "repeat", "mock": "file", "mock_review": "search"}
+PEAK_LABELS = {  # (icon name, text)
+    StudentProfile.PeakTime.MORNING: ("sun", "Sabah ilk iş"),
+    StudentProfile.PeakTime.NOON: ("cloud-sun", "Öğle verimli saatinde"),
+    StudentProfile.PeakTime.EVENING: ("sunset", "Akşam verimli saatinde"),
+    StudentProfile.PeakTime.NIGHT: ("moon", "Gece verimli saatinde"),
 }
 WEEKDAY_NAMES = ["Pazartesi", "Salı", "Çarşamba", "Perşembe", "Cuma", "Cumartesi", "Pazar"]
 DONE_ALL_MESSAGE = "Bugünü tamamladın! Yarın görüşürüz 👋"
@@ -52,7 +52,7 @@ def greeting(now):
 
 def decorate(tasks, profile):
     """Attach display helpers (color, icon, peak label) to tasks."""
-    label = PEAK_LABELS.get(profile.peak_time, "") if profile else ""
+    peak_icon, label = PEAK_LABELS.get(profile.peak_time, ("", "")) if profile else ("", "")
     today = timezone.localdate()
     mock_ids = [t.pk for t in tasks if t.kind == Task.Kind.MOCK]
     linked = set(MockExam.objects.filter(task_id__in=mock_ids).values_list("task_id", flat=True)) if mock_ids else set()
@@ -61,6 +61,7 @@ def decorate(tasks, profile):
         task.color = task.subject.color if task.subject_id else DEFAULT_COLOR
         task.icon = KIND_ICONS.get(task.kind, "•")
         task.peak_label = label if task.is_peak and task.kind == Task.Kind.LEARN else ""
+        task.peak_icon = peak_icon
         task.takes_counts = task.kind in (Task.Kind.PRACTICE, Task.Kind.REVIEW)
         task.can_focus = task.status == Task.Status.PENDING and task.date <= today
     return tasks
@@ -84,30 +85,30 @@ def _info_cards(request, profile, countdown, today):
     rescope_ids = active_rescope_ids(profile, today)
     if rescope_ids:
         cards.append({
-            "kind": "warning", "icon": "🧭",
+            "kind": "warning", "icon": "compass",
             "text": f"Planın gerisinde kalıyorsun. {len(rescope_ids)} konuyu şimdilik bırakmayı önerebilirim; karar senin.",
             "link": reverse("rescope"), "link_text": "Öneriye bak",
         })
     if pending.get("phase_changed"):
         rule = PHASE_BY_CODE[pending["phase_changed"]]
-        cards.append({"kind": "info", "icon": "🗓️", "text": f"Yeni döneme geçtin: {rule.name}. {rule.focus}"})
+        cards.append({"kind": "info", "icon": "calendar", "text": f"Yeni döneme geçtin: {rule.name}. {rule.focus}"})
     review = unseen_review(request.user)
     if review is not None:
         cards.append({
-            "kind": "info", "icon": "📅", "text": review.message,
+            "kind": "info", "icon": "calendar", "text": review.message,
             "link": reverse("weekly_reviews"), "link_text": "Haftalık değerlendirmeni gör",
         })
     if pending.get("missed"):
-        cards.append({"kind": "info", "icon": "💜", "text": "Dün çalışamadın, sorun değil. Görevlerini önümüzdeki günlere yaydım."})
+        cards.append({"kind": "info", "icon": "heart", "text": "Dün çalışamadın, sorun değil. Görevlerini önümüzdeki günlere yaydım."})
     pace = compute_pace(request.user, today)
     if pace_is_low(pace) and not rescope_ids:
         cards.append({
-            "kind": "info", "icon": "🌱",
+            "kind": "info", "icon": "sprout",
             "text": f"Son iki haftada planının %{round(pace * 100)}'ini yapabildin. Sorun değil; küçük adımlarla devam edelim.",
         })
     if countdown and countdown["estimated"]:
         cards.append({
-            "kind": "warning", "icon": "📅",
+            "kind": "warning", "icon": "calendar",
             "text": "Sınav tarihi tahmini. ÖSYM takvimi açıklanınca planını güncelleriz.",
         })
     return cards[:MAX_INFO_CARDS]

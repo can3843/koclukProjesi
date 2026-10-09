@@ -9,7 +9,8 @@ class HomePageTests(TestCase):
     def test_landing_page_for_guests(self):
         response = self.client.get("/")
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "Sınavına giden en kısa rota.")
+        # the second half of the slogan is highlighted in its own element, so check the halves
+        self.assertContains(response, "Sınavına giden <em>en kısa rota.</em>", html=False)
         self.assertContains(response, "Hemen başla")
         self.assertContains(response, 'href="/kayit/"')
 

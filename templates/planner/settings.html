@@ -39,7 +39,7 @@
       <label class="choice-card choice-icon">
         <input type="radio" name="peak_time" value="{{ value }}" required{% if habits_form.peak_time.value == value %} checked{% endif %}>
         <span class="choice-body">
-          <span class="choice-emoji" aria-hidden="true">{% if value == "morning" %}☀️{% elif value == "noon" %}🌤️{% elif value == "evening" %}🌆{% else %}🌙{% endif %}</span>
+          <span class="choice-emoji">{% if value == "morning" %}{% include "partials/icon.html" with name="sun" %}{% elif value == "noon" %}{% include "partials/icon.html" with name="cloud-sun" %}{% elif value == "evening" %}{% include "partials/icon.html" with name="sunset" %}{% else %}{% include "partials/icon.html" with name="moon" %}{% endif %}</span>
           <strong>{{ label }}</strong>
         </span>
       </label>

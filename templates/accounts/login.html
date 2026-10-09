@@ -3,19 +3,22 @@
 {% block title %}Giriş yap — rotam{% endblock %}
 
 {% block guest_content %}
-<div class="auth-wrap">
-  <h1>Tekrar hoş geldin</h1>
-  <p class="lead">Kaldığın yerden devam edelim.</p>
-  <form class="card" method="post" novalidate>
-    {% csrf_token %}
-    {% if rate_limited %}<div class="form-error" role="alert">{{ rate_limited }}</div>{% endif %}
-    {% if form.non_field_errors %}
-      <div class="form-error" role="alert">{% for error in form.non_field_errors %}{{ error }} {% endfor %}</div>
-    {% endif %}
-    {% for field in form %}{% include "partials/field.html" %}{% endfor %}
-    <input type="hidden" name="next" value="{{ next }}">
-    <button type="submit" class="btn btn-block">Giriş yap</button>
-  </form>
-  <p class="auth-foot">Hesabın yok mu? <a href="{% url 'register' %}">Hemen başla</a></p>
+<div class="auth-layout">
+  <div class="auth-wrap" data-stagger style="--i:0">
+    <h1>Tekrar hoş geldin</h1>
+    <p class="lead">Kaldığın yerden devam edelim.</p>
+    <form class="card" method="post" novalidate data-auth-form>
+      {% csrf_token %}
+      {% if rate_limited %}<div class="form-error" role="alert">{% include "partials/icon.html" with name="alert" %}<span>{{ rate_limited }}</span></div>{% endif %}
+      {% if form.non_field_errors %}
+        <div class="form-error" role="alert">{% include "partials/icon.html" with name="alert" %}<span>{% for error in form.non_field_errors %}{{ error }} {% endfor %}</span></div>
+      {% endif %}
+      {% for field in form %}{% include "partials/field.html" %}{% endfor %}
+      <input type="hidden" name="next" value="{{ next }}">
+      <button type="submit" class="btn btn-lg btn-block">Giriş yap</button>
+    </form>
+    <p class="auth-foot">Hesabın yok mu? <a href="{% url 'register' %}">Hemen başla</a></p>
+  </div>
+  {% include "partials/auth_aside.html" %}
 </div>
 {% endblock %}

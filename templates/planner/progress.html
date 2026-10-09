@@ -8,9 +8,9 @@
 <p class="muted">Küçük adımlar birikir. İşte şu ana kadar yaptıkların.</p>
 
 <section class="stat-grid" aria-label="Özet">
-  <div class="card stat"><span class="stat-value">🔥 {{ streak }}</span><span class="stat-label">günlük seri</span></div>
+  <div class="card stat"><span class="stat-value with-icon"><span class="flame">{% include "partials/icon.html" with name="flame" %}</span>{{ streak }}</span><span class="stat-label">günlük seri</span></div>
   <div class="card stat"><span class="stat-value">{{ stats.week_minutes|duration_short }}</span><span class="stat-label">bu hafta</span></div>
-  <div class="card stat"><span class="stat-value">⏱ {{ stats.focus_week|seconds_short }}</span><span class="stat-label">bu hafta odak · toplam {{ stats.focus_total|seconds_short }}</span></div>
+  <div class="card stat"><span class="stat-value">{{ stats.focus_week|seconds_short }}</span><span class="stat-label">bu hafta odak · toplam {{ stats.focus_total|seconds_short }}</span></div>
   <div class="card stat">
     <span class="stat-value">{{ stats.solved }}</span>
     <span class="stat-label">çözülen soru{% if stats.accuracy is not None %} · %{{ stats.accuracy }} doğru{% endif %}</span>
@@ -81,7 +81,7 @@
       </table>
     </details>
   {% else %}
-    <div class="empty-state"><div class="emoji" aria-hidden="true">📊</div><p class="muted">İlk görevini bitirdiğinde haftalık süren burada görünecek.</p></div>
+    <div class="empty-state"><div class="empty-icon">{% include "partials/icon.html" with name="chart" %}</div><p class="muted">İlk görevini bitirdiğinde haftalık süren burada görünecek.</p></div>
   {% endif %}
 </section>
 
@@ -146,7 +146,7 @@
     {% endif %}
   {% else %}
     <div class="empty-state">
-      <div class="emoji" aria-hidden="true">📈</div>
+      <div class="empty-icon">{% include "partials/icon.html" with name="trending" %}</div>
       <p class="muted">Henüz deneme girmedin. İlk denemeni eklediğinde netlerinin gidişatı burada çizilecek.</p>
       <a class="btn" href="{% url 'mock_add' %}">Deneme sonucu ekle</a>
     </div>

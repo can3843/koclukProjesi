@@ -4,19 +4,19 @@
     {% if task.status == "pending" %}
       <button type="submit" class="check" aria-label="Yaptım olarak işaretle: {{ task.title }}" data-check></button>
     {% elif task.status == "done" %}
-      <span class="check is-checked" aria-label="Yapıldı" role="img">✓</span>
+      <span class="check is-checked" aria-label="Yapıldı" role="img">{% include "partials/icon.html" with name="check" %}</span>
     {% else %}
       <span class="check is-skipped" aria-label="Atlandı" role="img">–</span>
     {% endif %}
     <div class="task-body">
-      <h3 class="task-title"><span aria-hidden="true">{{ task.icon }}</span> {{ task.title }}</h3>
+      <h3 class="task-title"><span class="kind-icon">{% include "partials/icon.html" with name=task.icon size="sm" %}</span>{{ task.title }}</h3>
       <p class="task-meta">
-        {{ task.minutes }} dk{% if task.peak_label %} · <span class="peak-label">{{ task.peak_label }}</span>{% endif %}
+        {{ task.minutes }} dk{% if task.peak_label %} · <span class="peak-label">{% include "partials/icon.html" with name=task.peak_icon size="sm" %}{{ task.peak_label }}</span>{% endif %}
         {% if task.status == "done" and task.correct is not None %} · <strong>{{ task.correct }}D {{ task.wrong }}Y {{ task.blank }}B</strong>{% endif %}
         {% if task.status == "skipped" %} · atlandı{% endif %}
-        <span data-focus-label>{% if task.focus_seconds >= 60 %} · ⏱ {{ task.focus_seconds|seconds_short }}{% endif %}</span>
+        <span data-focus-label>{% if task.focus_seconds >= 60 %} · {{ task.focus_seconds|seconds_short }} odak{% endif %}</span>
       </p>
-      {% if task.can_focus %}<button type="button" class="focus-btn" data-focus-start data-title="{{ task.title }}">⏱ Odaklan</button>{% endif %}
+      {% if task.can_focus %}<button type="button" class="focus-btn" data-focus-start data-title="{{ task.title }}">{% include "partials/icon.html" with name="timer" size="sm" %}Odaklan</button>{% endif %}
       {% if task.note %}<p class="task-note">{{ task.note }}</p>{% endif %}
       {% if task.kind == "mock" and task.status == "done" and not task.mock_linked and task.session %}
         <p class="task-note"><a href="{% url 'mock_add' %}?oturum={{ task.session.code }}&amp;gorev={{ task.pk }}">Deneme sonucunu gir →</a></p>

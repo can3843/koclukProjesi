@@ -22,7 +22,7 @@
     </a>
   {% empty %}
     <div class="card empty-state">
-      <div class="emoji" aria-hidden="true">📝</div>
+      <div class="empty-icon">{% include "partials/icon.html" with name="file" %}</div>
       <p class="muted">Henüz deneme girmedin. İlk denemeni çözdüğünde sonucunu buraya ekle; zayıf konularını birlikte bulalım.</p>
     </div>
   {% endfor %}

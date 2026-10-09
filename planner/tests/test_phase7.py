@@ -128,7 +128,7 @@ class FocusScreensTests(FrozenTodayMixin, TestCase):
     def test_today_has_focus_buttons_and_the_timer_panel(self):
         response = self.client.get("/bugun/")
         self.assertContains(response, "data-focus-start")
-        self.assertContains(response, "⏱ Odaklan")
+        self.assertContains(response, "Odaklan</button>")
         self.assertContains(response, "data-timer")
         self.assertContains(response, f'data-focus="{config.POMODORO_FOCUS_MIN * 60}"')
         self.assertContains(response, "js/timer.js")
@@ -140,7 +140,7 @@ class FocusScreensTests(FrozenTodayMixin, TestCase):
         card = html[html.index(f'id="task-{self.task.pk}"'):]
         card = card[:card.index("</article>")]
         self.assertNotIn("data-focus-start", card)
-        self.assertIn("⏱ 25 dk", card)
+        self.assertIn("25 dk odak", card)
         self.assertContains(self.client.get("/bugun/"), "odak")
 
     def test_week_view_has_no_focus_buttons_for_future_days(self):
@@ -151,7 +151,7 @@ class FocusScreensTests(FrozenTodayMixin, TestCase):
         add_focus_time(self.task, 90 * 60, D0)
         response = self.client.get("/ilerleme/")
         self.assertEqual(response.context["stats"]["focus_week"], 90 * 60)
-        self.assertContains(response, "⏱ 1 sa 30 dk")
+        self.assertContains(response, "1 sa 30 dk")
         self.assertEqual(response.context["weekly"]["rows"][-1]["focus_seconds"], 90 * 60)
 
     def test_weekly_review_includes_focus_minutes(self):

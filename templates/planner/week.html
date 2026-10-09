@@ -13,14 +13,14 @@
       {% if day.minutes %}<span class="muted">{{ day.minutes }} dk</span>{% endif %}
     </header>
     {% if day.is_rest %}
-      <p class="muted">Dinlenme günü 🌿</p>
+      <p class="muted with-icon">{% include "partials/icon.html" with name="leaf" size="sm" %}Dinlenme günü</p>
     {% elif day.tasks %}
       <ul class="week-tasks">
         {% for task in day.tasks %}
           <li class="week-task is-{{ task.status }}" style="--task-color: {{ task.color }}">
-            <span class="week-icon" aria-hidden="true">{{ task.icon }}</span>
+            <span class="week-icon">{% include "partials/icon.html" with name=task.icon size="sm" %}</span>
             <span class="week-title">{{ task.title }}</span>
-            <span class="muted week-min">{{ task.minutes }} dk{% if task.status == "done" %} ✓{% elif task.status == "skipped" %} (atlandı){% endif %}</span>
+            <span class="muted week-min">{{ task.minutes }} dk{% if task.status == "done" %} · yapıldı{% elif task.status == "skipped" %} (atlandı){% endif %}</span>
           </li>
         {% endfor %}
       </ul>

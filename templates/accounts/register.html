@@ -3,19 +3,22 @@
 {% block title %}Kayıt ol — rotam{% endblock %}
 
 {% block guest_content %}
-<div class="auth-wrap">
-  <h1>Rotanı çizmeye başla</h1>
-  <p class="lead">Birkaç bilgi yeter. Sonra kısa bir tanışma ile planını çıkaracağız.</p>
-  <form class="card" method="post" novalidate>
-    {% csrf_token %}
-    {% if rate_limited %}<div class="form-error" role="alert">{{ rate_limited }}</div>{% endif %}
-    {% if form.non_field_errors %}
-      <div class="form-error" role="alert">{% for error in form.non_field_errors %}{{ error }} {% endfor %}</div>
-    {% endif %}
-    {% for field in form %}{% if field.name != "website" %}{% include "partials/field.html" %}{% endif %}{% endfor %}
-    <div class="hp-field" aria-hidden="true"><label for="{{ form.website.id_for_label }}">Bu alanı boş bırak</label>{{ form.website }}</div>
-    <button type="submit" class="btn btn-block">Hesap oluştur</button>
-  </form>
-  <p class="auth-foot">Zaten hesabın var mı? <a href="{% url 'login' %}">Giriş yap</a></p>
+<div class="auth-layout">
+  <div class="auth-wrap" data-stagger style="--i:0">
+    <h1>Rotanı çizmeye başla</h1>
+    <p class="lead">Birkaç bilgi yeter. Sonra kısa bir tanışma ile planını çıkaracağız.</p>
+    <form class="card" method="post" novalidate data-auth-form>
+      {% csrf_token %}
+      {% if rate_limited %}<div class="form-error" role="alert">{% include "partials/icon.html" with name="alert" %}<span>{{ rate_limited }}</span></div>{% endif %}
+      {% if form.non_field_errors %}
+        <div class="form-error" role="alert">{% include "partials/icon.html" with name="alert" %}<span>{% for error in form.non_field_errors %}{{ error }} {% endfor %}</span></div>
+      {% endif %}
+      {% for field in form %}{% if field.name != "website" %}{% include "partials/field.html" %}{% endif %}{% endfor %}
+      <div class="hp-field" aria-hidden="true"><label for="{{ form.website.id_for_label }}">Bu alanı boş bırak</label>{{ form.website }}</div>
+      <button type="submit" class="btn btn-lg btn-block">Hesap oluştur</button>
+    </form>
+    <p class="auth-foot">Zaten hesabın var mı? <a href="{% url 'login' %}">Giriş yap</a></p>
+  </div>
+  {% include "partials/auth_aside.html" %}
 </div>
 {% endblock %}

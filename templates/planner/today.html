@@ -10,7 +10,7 @@
 
 {% if exam_over %}
   <div class="card empty-state">
-    <div class="emoji" aria-hidden="true">🍀</div>
+    <div class="empty-icon">{% include "partials/icon.html" with name="flag" %}</div>
     <h2>Sınav günü geldi</h2>
     <p class="muted">Bu zamana kadar çok emek verdin. Başarılar, kendine güven!</p>
   </div>
@@ -21,14 +21,14 @@
   <div class="day-summary-text">
     <p class="day-count"><strong data-done-count>{{ summary.done_count }}</strong> / <span data-total-count>{{ summary.total_count }}</span> görev</p>
     <p class="muted"><span data-done-minutes>{{ summary.done_minutes }}</span> / <span data-planned-minutes>{{ summary.planned_minutes }}</span> dk</p>
-    <p class="muted">⏱ <span data-focus-total>{{ summary.focus_seconds|seconds_short }}</span> odak</p>
-    <p class="streak" title="Üst üste çalıştığın gün sayısı">🔥 <strong data-streak>{{ streak }}</strong> gün seri</p>
+    <p class="muted with-icon">{% include "partials/icon.html" with name="timer" size="sm" %}<span><span data-focus-total>{{ summary.focus_seconds|seconds_short }}</span> odak</span></p>
+    <p class="streak with-icon" title="Üst üste çalıştığın gün sayısı">{% include "partials/icon.html" with name="flame" size="sm" %}<span><strong data-streak>{{ streak }}</strong> gün seri</span></p>
   </div>
 </section>
 
 {% if prep %}
 <section class="card prep-card">
-  <h2>🎒 Sınav günü hazırlık</h2>
+  <h2 class="with-icon">{% include "partials/icon.html" with name="backpack" %}Sınav günü hazırlık</h2>
   <ul>{% for item in prep %}<li>{{ item }}</li>{% endfor %}</ul>
 </section>
 {% endif %}
@@ -39,8 +39,8 @@
 
 {% if is_rest %}
   <div class="card empty-state">
-    <div class="emoji" aria-hidden="true">🌿</div>
-    <h2>Bugün dinlenme günün 🌿</h2>
+    <div class="empty-icon">{% include "partials/icon.html" with name="leaf" %}</div>
+    <h2>Bugün dinlenme günün</h2>
     <p class="muted">Kendine iyi bak.</p>
   </div>
 {% elif tasks %}
@@ -49,8 +49,8 @@
   </section>
 {% else %}
   <div class="card empty-state">
-    <div class="emoji" aria-hidden="true">🌿</div>
-    <p class="muted">Bugün için görev yok. Biraz dinlen, yarın devam! 🌿</p>
+    <div class="empty-icon">{% include "partials/icon.html" with name="leaf" %}</div>
+    <p class="muted">Bugün için görev yok. Biraz dinlen, yarın devam!</p>
   </div>
 {% endif %}
 
