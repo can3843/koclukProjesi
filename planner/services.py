@@ -376,7 +376,7 @@ def decay_boosts(user, last_sync, today):
 def ensure_daily_state(user, today=None):
     """Lazy daily housekeeping, run when a student opens the app (§6.9). Returns notices for the UI."""
     today = today or timezone.localdate()
-    profile = StudentProfile.objects.select_for_update().select_related("exam", "track").get(user=user)
+    profile = StudentProfile.objects.select_for_update(of=("self",)).select_related("exam", "track").get(user=user)
     notices = {"missed": 0, "phase_changed": None}
     if profile.last_daily_sync == today or profile.exam_id is None:
         return notices
@@ -857,7 +857,7 @@ def _apply_progress(task, row, today, counts):
 def complete_task(task, correct=None, wrong=None, blank=None, today=None):
     """Mark a task done (with optional results). Returns True when the future plan needs a refresh."""
     today = today or timezone.localdate()
-    task = Task.objects.select_for_update().select_related("topic", "user").get(pk=task.pk)
+    task = Task.objects.select_for_update(of=("self",)).select_related("topic", "user").get(pk=task.pk)
     if task.date > today:
         raise TaskError("Gelecekteki bir görevi henüz tamamlayamazsın.", 409)
     if task.status != Task.Status.PENDING:
@@ -944,7 +944,7 @@ def skip_task(task, today=None):
 def undo_task(task, today=None):
     """Take back a done or skipped task, only on the same day."""
     today = today or timezone.localdate()
-    task = Task.objects.select_for_update().select_related("topic", "user").get(pk=task.pk)
+    task = Task.objects.select_for_update(of=("self",)).select_related("topic", "user").get(pk=task.pk)
     if task.date != today:
         raise TaskError("Yalnızca bugünkü görevler geri alınabilir.", 409)
     if task.status not in (Task.Status.DONE, Task.Status.SKIPPED):
