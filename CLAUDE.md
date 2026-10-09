@@ -1045,14 +1045,14 @@ Her faz kendi içinde çalışır, test edilebilir ve deploy edilebilir bir duru
 
 ### Faz 2 — Sınav kataloğu ve konu veritabanı
 
-- [ ] `catalog` modelleri (§5.2) + migration'lar + RLS migration güncellemesi
-- [ ] Django admin: tüm modeller; `Topic` için ders filtresi, arama, `list_editable` ile `avg_questions`, `learn_hours`, `difficulty`, `is_estimated`; `prerequisites` için `filter_horizontal`; ders içinde konu sayısı ve toplam soru göstergesi
-- [ ] `catalog/validation.py` ve `check_exam_data` komutu (§5.2 kuralları)
-- [ ] `seed_exam_data` komutu (§5.5), tekrar çalıştırılabilir
-- [ ] `data/yks_2027.json`: §5.3'teki oturumlar, testler, dersler, alanlar ve **tüm derslerin konu listeleri** (§5.4 kurallarıyla)
-- [ ] `data/KAYNAKLAR.md` ve `data/DOGRULANACAKLAR.md` (ders ders, hangi sayıların tahmini olduğu)
-- [ ] Admin URL'si `/yonetim/`
-- [ ] Testler: doğrulama kuralları (toplam uyuşmazlığı, döngülü ön koşul, kendi kendine ön koşul), seed'in iki kez çalıştırılınca kopya oluşturmaması
+- [x] `catalog` modelleri (§5.2) + migration'lar + RLS migration güncellemesi
+- [x] Django admin: tüm modeller; `Topic` için ders filtresi, arama, `list_editable` ile `avg_questions`, `learn_hours`, `difficulty`, `is_estimated`; `prerequisites` için `filter_horizontal`; ders içinde konu sayısı ve toplam soru göstergesi
+- [x] `catalog/validation.py` ve `check_exam_data` komutu (§5.2 kuralları)
+- [x] `seed_exam_data` komutu (§5.5), tekrar çalıştırılabilir
+- [x] `data/yks_2027.json`: §5.3'teki oturumlar, testler, dersler, alanlar ve **tüm derslerin konu listeleri** (§5.4 kurallarıyla)
+- [x] `data/KAYNAKLAR.md` ve `data/DOGRULANACAKLAR.md` (ders ders, hangi sayıların tahmini olduğu)
+- [x] Admin URL'si `/yonetim/`
+- [x] Testler: doğrulama kuralları (toplam uyuşmazlığı, döngülü ön koşul, kendi kendine ön koşul), seed'in iki kez çalıştırılınca kopya oluşturmaması
 
 **Kabul kriterleri:** `check_exam_data` hatasız (uyarılar raporlanmış); admin'den konu verisi rahatça düzenlenebiliyor; DOĞRULANACAKLAR listesi kullanıcıya özetlendi.
 
@@ -1132,7 +1132,7 @@ Her faz kendi içinde çalışır, test edilebilir ve deploy edilebilir bir duru
 
 - [x] Faz 0 — İskelet ve ilk deploy (canlı: https://kocluk-projesi.vercel.app)
 - [x] Faz 1 — Tasarım sistemi, karşılama ve üyelik
-- [ ] Faz 2 — Sınav kataloğu ve konu veritabanı
+- [~] Faz 2 — Sınav kataloğu ve konu veritabanı (kod hazır; **Supabase'e migration ve seed bekliyor**)
 - [ ] Faz 3 — Tanışma, plan motoru çekirdeği ve gerçekçilik raporu
 - [ ] Faz 4 — Günlük görevler ve tekrar sistemi
 - [ ] Faz 5 — Denemeler, uyarlama ve haftalık değerlendirme
@@ -1145,6 +1145,7 @@ Her faz kendi içinde çalışır, test edilebilir ve deploy edilebilir bir duru
 - Faz 0 tamamlandı: Vercel deploy çalışıyor, canlı admin girişi (`/yonetim/`) ile Supabase okuma/yazma doğrulandı. `CSRF_TRUSTED_ORIGINS=https://kocluk-projesi.vercel.app`.
 - Faz 0: Supabase migration uygulandı, 10 tabloda RLS açık (politikasız; Advisor yalnızca INFO "RLS Enabled No Policy" gösteriyor, bu istenen durum). RLS SQL’inde `format(%I)` Django’nun `%` yer tutucusuyla çakıştığı için `quote_ident` kullanılıyor.
 - Faz 1: Tasarım sistemi `static/css/main.css` içinde (açık/koyu tema: `data-theme` + `prefers-color-scheme`, seçim `localStorage`'da). Kayıt/giriş/çıkış `accounts` uygulamasında; giriş `LoginView` + e-posta ile `EmailAuthenticationForm`, e-posta her yerde küçük harfe çevrilir (`User.save`, `get_by_natural_key` büyük/küçük harf duyarsız). `/bugun/` şimdilik geçici "yakında" sayfası; Plan/Deneme/İlerleme/Profil sekmeleri pasif. Kayıttan sonra şimdilik `/bugun/`'e gidilir, Faz 3'te tanışmaya yönlenecek. Logo `static/img/logo.svg`. Honeypot ve hız sınırı Faz 6'da.
+- Faz 2: `catalog` modelleri, `validation.py` (soru toplamı uyarısı, test toplamı/ön koşul döngüsü/kendi kendine ön koşul/farklı sınav hataları), `check_exam_data` ve `seed_exam_data` (slug'a göre upsert; doğrulama hata verirse transaction geri alınır). `data/yks_2027.json`: 3 oturum, 9 test, 23 ders, 252 konu, 4 alan; hepsi `is_estimated=true`. Konu başlıkları MEB'in 2026 YKS konu-kazanım PDF'inden, soru ağırlıkları ve süreler tahmini (bkz. `data/KAYNAKLAR.md`, `data/DOGRULANACAKLAR.md`). RLS: `core/migrations/0002_enable_rls_catalog.py`. Veriyi yeniden üretmek için kullanılan tek seferlik betik repoda yok; JSON elle ya da `/yonetim/` ile güncellenir.
 - Yerel geliştirme Python 3.12 ile (`.venv` 3.12'den yeniden oluşturuldu).
 - YKS 2027 tarihleri tahmini (TYT 19 Haziran, AYT/YDT 20 Haziran 2027). ÖSYM takvimi açıklanınca `data/yks_2027.json` güncellenip `seed_exam_data` yeniden çalıştırılacak.
 
