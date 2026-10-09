@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import MockExam, MockScore, Plan, PlanTopic, ReviewItem, StudentProfile, Task, TopicProgress
+from .models import MockExam, MockScore, Plan, PlanTopic, ReviewItem, StudentProfile, Task, TopicProgress, WeeklyReview
 
 
 @admin.register(StudentProfile)
@@ -57,3 +57,10 @@ class ReviewItemAdmin(admin.ModelAdmin):
     list_display = ("user", "topic", "due_date", "interval_index", "is_active")
     list_filter = ("is_active", "interval_index")
     raw_id_fields = ("user", "topic")
+
+
+@admin.register(WeeklyReview)
+class WeeklyReviewAdmin(admin.ModelAdmin):
+    list_display = ("user", "week_start", "seen_at")
+    search_fields = ("user__email",)
+    raw_id_fields = ("user",)

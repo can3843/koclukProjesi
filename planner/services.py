@@ -5,19 +5,27 @@ from dataclasses import asdict
 from datetime import date as date_cls, timedelta
 
 from django.db import transaction
+from django.db.models import F
+from django.db.models.functions import Greatest
 from django.utils import timezone
 
 from catalog.models import ExamSession, ExamTest, Subject, Topic
 
 from .engine import config, make_plan
-from .engine.adaptation import compute_streak, missed_task_ids
-from .engine.capacity import build_days
+from .engine.adaptation import (
+    compute_streak, decayed_boost, extra_practice_minutes, missed_task_ids, pace_of, propose_rescope, raised_boost,
+    rescope_needed,
+)
+from .engine.capacity import build_days, sum_budget
 from .engine.needs import build_need, candidate_needs
 from .engine.phases import phase_for
 from .engine.reviews import accuracy_of, after_review, first_review
 from .engine.scheduler import ReviewDue, ScheduleTopic, schedule
 from .engine.types import MockResult, PlanInput, SessionInfo, SubjectInfo, TestInfo, TopicInfo, TopicState
-from .models import MockExam, Plan, PlanTopic, ReviewItem, StudentProfile, Task, TopicProgress
+from .messages import weekly_message
+from .models import (
+    MockExam, MockScore, Plan, PlanTopic, ReviewItem, StudentProfile, Task, TopicProgress, WeeklyReview,
+)
 
 
 class TaskError(Exception):
@@ -73,6 +81,25 @@ def exam_countdown(profile, today=None):
 
 
 # ---------------------------------------------------------------- engine input
+
+def compute_pace(user, today):
+    """Done minutes / planned minutes of the last 14 days (today excluded); None without enough history."""
+    start = today - timedelta(days=config.PACE_WINDOW_DAYS)
+    rows = list(Task.objects.filter(user=user, date__gte=start, date__lt=today).values_list("date", "status", "minutes"))
+    if len({day for day, _, _ in rows}) < config.PACE_MIN_PLANNED_DAYS:
+        return None
+    planned = sum(minutes for _, _, minutes in rows)
+    done = sum(minutes for _, status, minutes in rows if status == Task.Status.DONE)
+    return pace_of(done, planned)
+
+
+def plan_age_days(user, today):
+    """Days since the student's first plan was made (the pace correction starts after two weeks)."""
+    first = Plan.objects.filter(user=user).order_by("created_at").first()
+    if first is None:
+        return 0
+    return max(0, (today - timezone.localtime(first.created_at).date()).days)
+
 
 def known_mock_dates(user):
     """Days of mocks that were taken, missed or are still planned (keeps the mock calendar stable)."""
@@ -139,6 +166,8 @@ def build_engine_input(user, today, extra_minutes_per_day=0):
         mocks=tuple(mocks),
         extra_minutes_per_day=extra_minutes_per_day,
         known_mock_dates=known_mock_dates(user),
+        pace=compute_pace(user, today),
+        plan_age_days=plan_age_days(user, today),
     )
 
 
@@ -328,6 +357,21 @@ def regenerate_future(user, today):
 
 # ---------------------------------------------------------------- daily state (lazy)
 
+def _monday(day):
+    return day - timedelta(days=day.weekday())
+
+
+def decay_boosts(user, last_sync, today):
+    """Boosts fade by BOOST_DECAY_PER_WEEK for every week boundary crossed since the last visit."""
+    if last_sync is None:
+        return 0
+    weeks = (_monday(today) - _monday(last_sync)).days // 7
+    if weeks <= 0:
+        return 0
+    amount = config.BOOST_DECAY_PER_WEEK * weeks
+    return TopicProgress.objects.filter(user=user, boost__gt=1.0).update(boost=Greatest(1.0, F("boost") - amount))
+
+
 @transaction.atomic
 def ensure_daily_state(user, today=None):
     """Lazy daily housekeeping, run when a student opens the app (§6.9). Returns notices for the UI."""
@@ -344,6 +388,9 @@ def ensure_daily_state(user, today=None):
         Task.objects.filter(pk__in=missed_ids).update(status=Task.Status.MISSED)
     notices["missed"] = len(missed_ids)
 
+    # 2. weekly boost decay
+    decay_boosts(user, profile.last_daily_sync, today)
+
     exam_date = first_session(profile.exam).date
     days_left = (exam_date - today).days
     if days_left > 0:
@@ -357,12 +404,279 @@ def ensure_daily_state(user, today=None):
         elif missed_ids:
             # lost work goes back to the queue: plan the window again (never piled onto today)
             clear_future_tasks(user, today)
+        # 4. last week's review, when a new week has started
+        create_weekly_review(user, today)
         # 5. fill the window: days without any task get tasks (done work today is never regenerated)
         generate_tasks(user, plan, today)
+        # 6. is the student behind? prepare a scope suggestion (not applied) for them to decide on
+        profile.rescope_proposal = _daily_rescope_proposal(user, today)
 
     profile.last_daily_sync = today
-    profile.save(update_fields=["last_daily_sync"])
+    profile.save(update_fields=["last_daily_sync", "rescope_proposal"])
     return notices
+
+
+# ---------------------------------------------------------------- scope suggestion (§6.8)
+
+def _included_unfinished(user, inp):
+    """(ids of the active plan's included topics that still have work left in study order, needs by id)."""
+    plan = get_active_plan(user)
+    needs = {n.topic.id: n for n in candidate_needs(inp)}
+    if plan is None:
+        return [], needs
+    ids = plan.plan_topics.filter(included=True).order_by("sequence").values_list("topic_id", flat=True)
+    return [tid for tid in ids if tid in needs and not needs[tid].user_excluded], needs
+
+
+def compute_rescope(user, today, pace=None):
+    """Dry run, no writes: topics to suggest dropping because the real pace is lower than the plan assumes."""
+    pace = compute_pace(user, today) if pace is None else pace
+    if pace is None or pace >= 1:
+        return []
+    inp = build_engine_input(user, today)
+    included, needs = _included_unfinished(user, inp)
+    if not included:
+        return []
+    remaining_need = sum(needs[tid].need for tid in included)
+    remaining_budget = sum_budget(build_days(inp)).study_total
+    if not rescope_needed(remaining_need, remaining_budget, pace):
+        return []
+    return propose_rescope(inp, included, pace)
+
+
+def _daily_rescope_proposal(user, today):
+    pace = compute_pace(user, today)
+    topic_ids = compute_rescope(user, today, pace)
+    if not topic_ids:
+        return {}
+    return {"topic_ids": topic_ids, "pace": round(pace, 2), "date": today.isoformat()}
+
+
+def active_rescope_ids(profile, today):
+    """Topic ids of the pending scope suggestion (empty when there is none or it was snoozed)."""
+    ids = (profile.rescope_proposal or {}).get("topic_ids") or []
+    if not ids:
+        return []
+    if profile.rescope_snoozed_until and profile.rescope_snoozed_until > today:
+        return []
+    return ids
+
+
+@transaction.atomic
+def apply_rescope(user, today=None):
+    """The student agreed: drop the suggested topics (marked as excluded) and rebuild the plan."""
+    today = today or timezone.localdate()
+    topic_ids = compute_rescope(user, today)
+    if topic_ids:
+        TopicProgress.objects.filter(user=user, topic_id__in=topic_ids).update(user_override=TopicProgress.Override.FORCE_EXCLUDE)
+        build_plan(user, today, Plan.Reason.RESCOPE)
+    StudentProfile.objects.filter(user=user).update(rescope_proposal={}, rescope_snoozed_until=None)
+    return topic_ids
+
+
+def snooze_rescope(user, today=None):
+    today = today or timezone.localdate()
+    StudentProfile.objects.filter(user=user).update(rescope_snoozed_until=today + timedelta(days=config.RESCOPE_SNOOZE_DAYS))
+
+
+# ---------------------------------------------------------------- weekly review (§4.7)
+
+def _answered(task):
+    return (task.correct or 0) + (task.wrong or 0) + (task.blank or 0)
+
+
+def _topic_accuracy(tasks):
+    """topic id -> (answered, correct) over done tasks that have results."""
+    out = {}
+    for task in tasks:
+        if task.status != Task.Status.DONE or not task.topic_id or task.correct is None:
+            continue
+        answered, correct = out.get(task.topic_id, (0, 0))
+        out[task.topic_id] = (answered + _answered(task), correct + task.correct)
+    return out
+
+
+def _best_improvement(this_week, previous_week):
+    """(topic name, percentage points) of the topic whose accuracy rose most, or None."""
+    now, before = _topic_accuracy(this_week), _topic_accuracy(previous_week)
+    best = None
+    for topic_id, (answered, correct) in now.items():
+        old_answered, old_correct = before.get(topic_id, (0, 0))
+        if answered < config.IMPROVEMENT_MIN_ANSWERED or old_answered < config.IMPROVEMENT_MIN_ANSWERED:
+            continue
+        points = round(100 * correct / answered - 100 * old_correct / old_answered)
+        if points >= 1 and (best is None or points > best[1]):
+            best = (topic_id, points)
+    if best is None:
+        return None
+    return Topic.objects.get(pk=best[0]).name, best[1]
+
+
+def _mock_changes(user, week_start, week_end):
+    """Total net of the latest mock of each session this week versus the one before it."""
+    mocks = MockExam.objects.filter(user=user, taken_on__lt=week_end).select_related("session").prefetch_related("scores")
+    by_session = defaultdict(list)
+    for mock in mocks:
+        by_session[mock.session.code].append(mock)
+
+    def total(mock):
+        return float(sum(score.net for score in mock.scores.all()))
+
+    changes = []
+    for code, items in by_session.items():
+        items.sort(key=lambda m: (m.taken_on, m.pk))
+        latest = items[-1]
+        if latest.taken_on < week_start or len(items) < 2:
+            continue
+        before, after = total(items[-2]), total(latest)
+        changes.append({"session": code, "before": round(before, 2), "after": round(after, 2), "change": round(after - before, 2)})
+    return changes
+
+
+def _focus_subjects(user):
+    rows = (
+        TopicProgress.objects.filter(user=user, boost__gt=1.0)
+        .select_related("topic__subject").order_by("-boost", "topic__subject__order")
+    )
+    names = []
+    for row in rows:
+        name = row.topic.subject.name
+        if name not in names:
+            names.append(name)
+        if len(names) == config.FOCUS_SUBJECT_COUNT:
+            break
+    return names
+
+
+def create_weekly_review(user, today):
+    """Create the review of the previous week (Monday to Sunday) once, if the student had tasks in it."""
+    this_monday = _monday(today)
+    week_start = this_monday - timedelta(days=7)
+    if WeeklyReview.objects.filter(user=user, week_start=week_start).exists():
+        return None
+    tasks = list(Task.objects.filter(user=user, date__gte=week_start, date__lt=this_monday))
+    if not tasks:
+        return None
+    previous = list(Task.objects.filter(user=user, date__gte=week_start - timedelta(days=7), date__lt=week_start))
+
+    planned = sum(t.minutes for t in tasks)
+    done = sum(t.minutes for t in tasks if t.status == Task.Status.DONE)
+    percent = round(100 * done / planned) if planned else 0
+    with_results = [t for t in tasks if t.status == Task.Status.DONE and t.correct is not None]
+    answered = sum(_answered(t) for t in with_results)
+    correct = sum(t.correct for t in with_results)
+    last_day = this_monday - timedelta(days=1)
+    rows = list(Task.objects.filter(user=user, date__lte=last_day, date__gte=last_day - timedelta(days=400)).values_list("date", "status"))
+    rest = getattr(user.student_profile, "rest_weekday", None)
+    streak = compute_streak({d for d, st in rows if st == Task.Status.DONE}, {d for d, _ in rows}, rest, last_day)
+    improved = _best_improvement(tasks, previous)
+    focus = _focus_subjects(user)
+
+    stats = {
+        "planned_minutes": planned, "done_minutes": done, "percent": percent,
+        "task_count": len(tasks), "done_count": sum(1 for t in tasks if t.status == Task.Status.DONE),
+        "answered": answered, "correct": correct,
+        "accuracy": round(100 * correct / answered) if answered else None,
+        "streak": streak, "mock_changes": _mock_changes(user, week_start, this_monday),
+        "improved": {"topic": improved[0], "points": improved[1]} if improved else None,
+        "focus": focus,
+    }
+    message = weekly_message(percent, week_start, user.pk, improved, focus)
+    return WeeklyReview.objects.create(user=user, week_start=week_start, stats=stats, message=message)
+
+
+def unseen_review(user):
+    return WeeklyReview.objects.filter(user=user, seen_at__isnull=True).order_by("-week_start").first()
+
+
+# ---------------------------------------------------------------- mocks (§4.6, §6.8)
+
+@transaction.atomic
+def record_mock(user, session, taken_on, scores, task_id=None, today=None):
+    """Save a mock exam result. `scores` maps Subject -> (correct, wrong, blank).
+
+    A planned mock task of the same session and day is linked (and marked done) automatically.
+    """
+    today = today or timezone.localdate()
+    mock = MockExam.objects.create(user=user, session=session, taken_on=taken_on)
+    MockScore.objects.bulk_create(
+        MockScore(mock=mock, subject=subject, correct=c, wrong=w, blank=b) for subject, (c, w, b) in scores.items()
+    )
+    linked = set(MockExam.objects.filter(user=user, task__isnull=False).values_list("task_id", flat=True))
+    candidates = Task.objects.filter(user=user, kind=Task.Kind.MOCK, session=session).exclude(pk__in=linked)
+    task = candidates.filter(pk=task_id).first() if task_id else None
+    if task is None:
+        task = candidates.filter(date=taken_on).order_by("id").first()
+    if task is not None:
+        mock.task = task
+        mock.save(update_fields=["task"])
+        if task.status == Task.Status.PENDING and task.date <= today:
+            complete_task(task, today=today)
+    # the new result changes the estimate, so the plan is made again
+    build_plan(user, today, Plan.Reason.MANUAL)
+    return mock
+
+
+def _schedule_review_for_tomorrow(user, topic, today, exam_date):
+    due = today + timedelta(days=1)
+    if due >= exam_date:
+        return
+    item = ReviewItem.objects.filter(user=user, topic=topic, is_active=True).first()
+    if item is None:
+        ReviewItem.objects.create(user=user, topic=topic, due_date=due, interval_index=0)
+    elif item.due_date > due:
+        item.due_date = due
+        item.save(update_fields=["due_date"])
+
+
+@transaction.atomic
+def set_weak_topics(user, mock, topic_ids, today=None):
+    """Mark the topics the student struggled with in a mock: they come back with more weight."""
+    today = today or timezone.localdate()
+    subject_ids = list(mock.scores.values_list("subject_id", flat=True))
+    chosen = list(Topic.objects.filter(pk__in=topic_ids, subject_id__in=subject_ids, is_active=True))
+    already = set(mock.weak_topics.values_list("pk", flat=True))
+    mock.weak_topics.set(chosen)
+    exam_date = first_session(user.student_profile.exam).date
+    new_topics = [t for t in chosen if t.pk not in already]
+    for topic in new_topics:
+        row = TopicProgress.objects.select_for_update().get(user=user, topic=topic)
+        row.boost = raised_boost(row.boost)
+        row.save(update_fields=["boost"])
+        if row.state == TopicProgress.State.LEARNED:
+            _schedule_review_for_tomorrow(user, topic, today, exam_date)
+    if new_topics:
+        build_plan(user, today, Plan.Reason.MANUAL)
+    return chosen
+
+
+def plan_suggestions(user, mock):
+    """Weak topics outside the plan that are small enough to add ("do you want them in the plan?")."""
+    plan = get_active_plan(user)
+    if plan is None:
+        return []
+    in_plan = set(plan.plan_topics.filter(included=True).values_list("topic_id", flat=True))
+    out = []
+    for topic in mock.weak_topics.select_related("subject"):
+        row = TopicProgress.objects.filter(user=user, topic=topic).first()
+        if row is None or topic.pk in in_plan or row.user_override == TopicProgress.Override.FORCE_INCLUDE:
+            continue
+        if row.state == TopicProgress.State.LEARNED:
+            continue
+        if row.state == TopicProgress.State.EXCLUDED or float(topic.learn_hours) <= config.BIG_TOPIC_HOURS:
+            out.append(topic)
+    return out
+
+
+@transaction.atomic
+def add_topic_to_plan(user, topic, today=None):
+    today = today or timezone.localdate()
+    row = TopicProgress.objects.select_for_update().get(user=user, topic=topic)
+    row.user_override = TopicProgress.Override.FORCE_INCLUDE
+    if row.state == TopicProgress.State.EXCLUDED:
+        row.state = TopicProgress.State.NOT_STARTED
+    row.save()
+    return build_plan(user, today, Plan.Reason.MANUAL)
 
 
 # ---------------------------------------------------------------- task actions
@@ -445,6 +759,10 @@ def _apply_progress(task, row, today, counts):
                 used = min(task.minutes, row.remaining_practice_minutes)
                 row.remaining_practice_minutes -= used
                 undo["practice"] = used
+                extra = extra_practice_minutes(*counts) if counts else 0
+                if extra:  # weak accuracy: the topic needs more practice
+                    row.remaining_practice_minutes += extra
+                    undo["extra_practice"] = extra
             if row.state == TopicProgress.State.NOT_STARTED:
                 row.state = TopicProgress.State.IN_PROGRESS
             if row.remaining_learn_minutes <= 0 and row.remaining_practice_minutes <= 0:
@@ -534,7 +852,7 @@ def undo_task(task, today=None):
             if undo["learn"] and row.remaining_learn_minutes is not None:
                 row.remaining_learn_minutes += undo["learn"]
             if undo["practice"] and row.remaining_practice_minutes is not None:
-                row.remaining_practice_minutes += undo["practice"]
+                row.remaining_practice_minutes += undo["practice"] - undo.get("extra_practice", 0)
             row.questions_solved = max(0, row.questions_solved - undo["solved"])
             row.questions_correct = max(0, row.questions_correct - undo["correct"])
             row.questions_wrong = max(0, row.questions_wrong - undo["wrong"])

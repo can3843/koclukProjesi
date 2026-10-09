@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block title %}Zorlandığın konular — rotam{% endblock %}
+
+{% block content %}
+<h1>Bu denemede zorlandığın konuları işaretle</h1>
+<p class="muted">İstersen atlayabilirsin. İşaretlediğin konular planda daha çok yer alır ve öğrendiysen tekrarı yarına gelir.</p>
+
+<form method="post">
+  {% csrf_token %}
+  <input type="hidden" name="zayif" value="{{ mock.pk }}">
+  {% for group in groups %}
+    <details class="subject-box"{% if group.open %} open{% endif %}>
+      <summary>
+        <span class="dot" style="background: {{ group.subject.color }}"></span>
+        <span class="subject-name">{{ group.subject.name }}</span>
+      </summary>
+      <ul class="check-list">
+        {% for item in group.topics %}
+          <li>
+            <label class="check-row">
+              <input type="checkbox" name="weak" value="{{ item.topic.pk }}"{% if item.checked %} checked{% endif %}>
+              <span>{{ item.topic.name }}</span>
+            </label>
+          </li>
+        {% endfor %}
+      </ul>
+    </details>
+  {% endfor %}
+  <div class="step-actions">
+    <a class="btn btn-secondary" href="{% url 'mock_detail' mock.pk %}">Atla</a>
+    <button type="submit" class="btn">Kaydet</button>
+  </div>
+</form>
+{% endblock %}

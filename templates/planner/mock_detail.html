@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+
+{% block title %}{{ mock.session.code }} denemesi — rotam{% endblock %}
+
+{% block content %}
+<h1>{{ mock.session.code }} denemesi</h1>
+<p class="muted">{{ mock.taken_on|date:"j F Y" }}</p>
+
+<section class="card">
+  <p class="mock-total"><span class="range-value">{{ net }}</span> <span class="muted">net{% if questions %} / {{ questions }}{% endif %}</span></p>
+  <table class="score-table">
+    <thead><tr><th scope="col">Ders</th><th scope="col">D</th><th scope="col">Y</th><th scope="col">B</th><th scope="col">Net</th></tr></thead>
+    <tbody>
+      {% for score in scores %}
+        <tr>
+          <th scope="row"><span class="dot" style="background: {{ score.subject.color }}"></span>{{ score.subject.name }}</th>
+          <td>{{ score.correct }}</td><td>{{ score.wrong }}</td><td>{{ score.blank }}</td>
+          <td><strong>{{ score.net }}</strong></td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</section>
+
+<section class="card section-gap">
+  <h2>Zorlandığın konular</h2>
+  {% if weak %}
+    <ul class="focus-list">
+      {% for topic in weak %}<li><strong>{{ topic.name }}</strong> <span class="muted">· {{ topic.subject.name }}</span></li>{% endfor %}
+    </ul>
+  {% else %}
+    <p class="muted">Henüz konu işaretlemedin.</p>
+  {% endif %}
+  <a class="btn btn-secondary btn-block" href="{% url 'mock_add' %}?zayif={{ mock.pk }}">Zayıf konuları düzenle</a>
+</section>
+
+{% if suggestions %}
+<section class="card section-gap">
+  <h2>Bu konuları plana ekleyelim mi?</h2>
+  <p class="muted">Şu an planında değiller; küçük konular olduğu için eklenebilir.</p>
+  <ul class="dropped-list">
+    {% for topic in suggestions %}
+      <li class="suggest-row">
+        <span><strong>{{ topic.name }}</strong><br><small class="muted">{{ topic.subject.name }}</small></span>
+        <form method="post" action="{% url 'mock_add_topic' mock.pk topic.pk %}">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-small">Plana ekle</button>
+        </form>
+      </li>
+    {% endfor %}
+  </ul>
+</section>
+{% endif %}
+
+<a class="btn btn-secondary btn-block section-gap" href="{% url 'mock_list' %}">Tüm denemeler</a>
+{% endblock %}

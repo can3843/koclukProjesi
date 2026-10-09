@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block title %}Deneme ekle — rotam{% endblock %}
+
+{% block content %}
+<h1>Hangi denemeyi çözdün?</h1>
+<div class="choice-list">
+  {% for session in sessions %}
+    <a class="card mock-row" href="{% url 'mock_add' %}?oturum={{ session.code }}">
+      <div>
+        <strong>{{ session.code }} denemesi</strong>
+        <p class="muted">{{ session.name }} · {{ session.duration_minutes }} dk</p>
+      </div>
+      <span aria-hidden="true">→</span>
+    </a>
+  {% endfor %}
+</div>
+<a class="btn btn-secondary btn-block" href="{% url 'mock_list' %}">Geri</a>
+{% endblock %}

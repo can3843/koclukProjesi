@@ -8,10 +8,14 @@ from django.template.loader import render_to_string
 from django.utils import timezone
 from django.views.decorators.http import require_POST
 
+from django.urls import reverse
+
+from planner.engine.adaptation import pace_is_low
 from planner.engine.phases import PHASE_BY_CODE
-from planner.models import StudentProfile, Task
+from planner.models import MockExam, StudentProfile, Task
 from planner.services import (
-    TaskError, complete_task, current_streak, day_summary, ensure_daily_state, exam_countdown, skip_task, undo_task,
+    TaskError, active_rescope_ids, complete_task, compute_pace, current_streak, day_summary, ensure_daily_state,
+    exam_countdown, skip_task, undo_task, unseen_review,
 )
 
 MAX_INFO_CARDS = 2
@@ -48,7 +52,10 @@ def greeting(now):
 def decorate(tasks, profile):
     """Attach display helpers (color, icon, peak label) to tasks."""
     label = PEAK_LABELS.get(profile.peak_time, "") if profile else ""
+    mock_ids = [t.pk for t in tasks if t.kind == Task.Kind.MOCK]
+    linked = set(MockExam.objects.filter(task_id__in=mock_ids).values_list("task_id", flat=True)) if mock_ids else set()
     for task in tasks:
+        task.mock_linked = task.pk in linked
         task.color = task.subject.color if task.subject_id else DEFAULT_COLOR
         task.icon = KIND_ICONS.get(task.kind, "•")
         task.peak_label = label if task.is_peak and task.kind == Task.Kind.LEARN else ""
@@ -66,15 +73,35 @@ def _stash_notices(request, notices):
     request.session["daily_notices"] = pending
 
 
-def _info_cards(request, countdown):
-    """Information cards, at most two at a time, most important first (§13 Faz 5 order)."""
+def _info_cards(request, profile, countdown, today):
+    """Information cards, at most two at a time, most important first (§13 Faz 5 order):
+    scope suggestion > new phase > weekly review > missed day > pace warning > estimated exam date."""
     pending = request.session.pop("daily_notices", {})
     cards = []
+    rescope_ids = active_rescope_ids(profile, today)
+    if rescope_ids:
+        cards.append({
+            "kind": "warning", "icon": "🧭",
+            "text": f"Planın gerisinde kalıyorsun. {len(rescope_ids)} konuyu şimdilik bırakmayı önerebilirim; karar senin.",
+            "link": reverse("rescope"), "link_text": "Öneriye bak",
+        })
     if pending.get("phase_changed"):
         rule = PHASE_BY_CODE[pending["phase_changed"]]
         cards.append({"kind": "info", "icon": "🗓️", "text": f"Yeni döneme geçtin: {rule.name}. {rule.focus}"})
+    review = unseen_review(request.user)
+    if review is not None:
+        cards.append({
+            "kind": "info", "icon": "📅", "text": review.message,
+            "link": reverse("weekly_reviews"), "link_text": "Haftalık değerlendirmeni gör",
+        })
     if pending.get("missed"):
         cards.append({"kind": "info", "icon": "💜", "text": "Dün çalışamadın, sorun değil. Görevlerini önümüzdeki günlere yaydım."})
+    pace = compute_pace(request.user, today)
+    if pace_is_low(pace) and not rescope_ids:
+        cards.append({
+            "kind": "info", "icon": "🌱",
+            "text": f"Son iki haftada planının %{round(pace * 100)}'ini yapabildin. Sorun değil; küçük adımlarla devam edelim.",
+        })
     if countdown and countdown["estimated"]:
         cards.append({
             "kind": "warning", "icon": "📅",
@@ -89,6 +116,7 @@ def today_view(request):
     profile = request.student_profile
     notices = ensure_daily_state(request.user, today)
     _stash_notices(request, notices)
+    profile.refresh_from_db(fields=["rescope_proposal", "rescope_snoozed_until"])  # the daily sync may have changed them
 
     countdown = exam_countdown(profile, today)
     exam_over = countdown is not None and countdown["date"] <= today
@@ -111,7 +139,7 @@ def today_view(request):
         "ring_offset": round(RING_LENGTH * (1 - percent / 100), 2),
         "all_done": summary["total_count"] > 0 and summary["done_count"] == summary["total_count"],
         "streak": current_streak(request.user, today),
-        "cards": _info_cards(request, countdown),
+        "cards": _info_cards(request, profile, countdown, today),
         "is_rest": is_rest,
         "exam_over": exam_over,
         "prep": PREP_ITEMS if countdown and 0 < countdown["days"] <= 7 else None,

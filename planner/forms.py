@@ -142,3 +142,55 @@ class GoalsAndMockForm(forms.Form):
                 })
             blocks.append({"session": session, "date": self[f"date_{session.code}"], "subjects": subjects})
         return blocks
+
+
+class MockForm(forms.Form):
+    """Result of one mock exam (a session), subject by subject: correct, wrong, blank."""
+
+    taken_on = forms.DateField(label="Deneme tarihi", widget=forms.DateInput(attrs={"type": "date"}))
+
+    def __init__(self, *args, subjects=(), **kwargs):
+        super().__init__(*args, **kwargs)
+        self.subjects = list(subjects)
+        for subject in self.subjects:
+            for key, label in (("c", "Doğru"), ("w", "Yanlış"), ("b", "Boş")):
+                self.fields[f"{key}_{subject.pk}"] = forms.IntegerField(
+                    label=f"{subject.name} – {label}", min_value=0, required=False,
+                    widget=forms.NumberInput(attrs={"inputmode": "numeric", "min": 0, "placeholder": "0"}),
+                )
+
+    def _filled(self, subject):
+        return any(self.cleaned_data.get(f"{k}_{subject.pk}") is not None for k in ("c", "w", "b"))
+
+    def clean_taken_on(self):
+        value = self.cleaned_data["taken_on"]
+        if value > timezone.localdate():
+            raise forms.ValidationError("Deneme tarihi gelecekte olamaz.")
+        return value
+
+    def clean(self):
+        cleaned = super().clean()
+        filled = [s for s in self.subjects if self._filled(s)]
+        if not filled and not self.errors:
+            raise forms.ValidationError("En az bir dersin sonucunu gir.")
+        for subject in filled:
+            total = sum(cleaned.get(f"{k}_{subject.pk}") or 0 for k in ("c", "w", "b"))
+            if total > subject.question_count:
+                self.add_error(
+                    f"c_{subject.pk}",
+                    f"{subject.name} için doğru, yanlış ve boş toplamı {subject.question_count} soruyu geçemez.",
+                )
+        return cleaned
+
+    def scores(self):
+        """Subject -> (correct, wrong, blank) for the subjects the student filled in."""
+        return {
+            s: tuple(self.cleaned_data.get(f"{k}_{s.pk}") or 0 for k in ("c", "w", "b"))
+            for s in self.subjects if self._filled(s)
+        }
+
+    def rows(self):
+        return [
+            {"subject": s, "correct": self[f"c_{s.pk}"], "wrong": self[f"w_{s.pk}"], "blank": self[f"b_{s.pk}"]}
+            for s in self.subjects
+        ]

@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block title %}Denemeler — rotam{% endblock %}
+
+{% block content %}
+<h1>Denemelerin</h1>
+<p class="muted">Çözdüğün denemeleri gir; tahminlerimizi ve planını buna göre ayarlayalım.</p>
+
+<a class="btn btn-block" href="{% url 'mock_add' %}">+ Deneme sonucu ekle</a>
+
+<section class="section-gap">
+  {% for row in rows %}
+    <a class="card mock-row" href="{% url 'mock_detail' row.mock.pk %}">
+      <div>
+        <strong>{{ row.mock.session.code }} denemesi</strong>
+        <p class="muted">{{ row.mock.taken_on|date:"j F Y" }}{% if row.weak_count %} · {{ row.weak_count }} zayıf konu işaretli{% endif %}</p>
+      </div>
+      <div class="mock-net">
+        <span class="range-value">{{ row.net }}</span>
+        <small class="muted">net{% if row.questions %} / {{ row.questions }}{% endif %}</small>
+      </div>
+    </a>
+  {% empty %}
+    <div class="card empty-state">
+      <div class="emoji" aria-hidden="true">📝</div>
+      <p class="muted">Henüz deneme girmedin. İlk denemeni çözdüğünde sonucunu buraya ekle; zayıf konularını birlikte bulalım.</p>
+    </div>
+  {% endfor %}
+</section>
+{% endblock %}

@@ -1084,14 +1084,14 @@ Her faz kendi içinde çalışır, test edilebilir ve deploy edilebilir bir duru
 
 ### Faz 5 — Denemeler, uyarlama ve haftalık değerlendirme
 
-- [ ] `MockExam`/`MockScore` sayfaları: liste, ekleme (ders ders D/Y/B + zayıf konular adımı), detay
-- [ ] Planlanan deneme göreviyle otomatik eşleştirme
-- [ ] Motor: deneme etkisi (boost, tekrar kuyruğu), boost sönümü, düşük pratik başarısı, tempo ve kapsam önerisi dry-run'ı (§6.8)
-- [ ] `/plan/kapsam-onerisi/` onay akışı
-- [ ] `WeeklyReview` modeli + RLS; `ensure_daily_state`'e haftalık değerlendirme adımı; `planner/messages.py` (§8.6); `/degerlendirme/`
-- [ ] `/bugun/` bilgi kartları (en fazla 2 aynı anda, öncelik sırası: kapsam önerisi > faz değişimi > haftalık değerlendirme > kaçırılan gün > tempo uyarısı > tahmini tarih)
-- [ ] Projeksiyona deneme kalibrasyonu ve tempo düzeltmesi
-- [ ] Testler: §6.10'daki 13 numaralı senaryo; net hesabı; toplamın soru sayısını aşmaması; boost sınırları; haftalık değerlendirmenin haftada bir kez oluşması
+- [x] `MockExam`/`MockScore` sayfaları: liste, ekleme (ders ders D/Y/B + zayıf konular adımı), detay
+- [x] Planlanan deneme göreviyle otomatik eşleştirme
+- [x] Motor: deneme etkisi (boost, tekrar kuyruğu), boost sönümü, düşük pratik başarısı, tempo ve kapsam önerisi dry-run'ı (§6.8)
+- [x] `/plan/kapsam-onerisi/` onay akışı
+- [x] `WeeklyReview` modeli + RLS; `ensure_daily_state`'e haftalık değerlendirme adımı; `planner/messages.py` (§8.6); `/degerlendirme/`
+- [x] `/bugun/` bilgi kartları (en fazla 2 aynı anda, öncelik sırası: kapsam önerisi > faz değişimi > haftalık değerlendirme > kaçırılan gün > tempo uyarısı > tahmini tarih)
+- [x] Projeksiyona deneme kalibrasyonu ve tempo düzeltmesi
+- [x] Testler: §6.10'daki 13 numaralı senaryo; net hesabı; toplamın soru sayısını aşmaması; boost sınırları; haftalık değerlendirmenin haftada bir kez oluşması
 
 **Kabul kriterleri:** Deneme girildiğinde zayıf konular sonraki günlerde görünür biçimde öne geliyor; geride kalan kullanıcıya onaylı kapsam önerisi sunuluyor; pazartesi haftalık değerlendirme kartı çıkıyor.
 
@@ -1135,7 +1135,7 @@ Her faz kendi içinde çalışır, test edilebilir ve deploy edilebilir bir duru
 - [x] Faz 2 — Sınav kataloğu ve konu veritabanı (Supabase'e migration ve seed uygulandı)
 - [x] Faz 3 — Tanışma, plan motoru çekirdeği ve gerçekçilik raporu (Supabase'e migration uygulandı)
 - [x] Faz 4 — Günlük görevler ve tekrar sistemi (Supabase'e migration uygulandı)
-- [ ] Faz 5 — Denemeler, uyarlama ve haftalık değerlendirme
+- [x] Faz 5 — Denemeler, uyarlama ve haftalık değerlendirme (Supabase'e migration uygulandı)
 - [ ] Faz 6 — İlerleme paneli, ayarlar ve sağlamlaştırma
 
 **Notlar / alınan kararlar:**
@@ -1149,6 +1149,7 @@ Her faz kendi içinde çalışır, test edilebilir ve deploy edilebilir bir duru
 - Faz 2: Supabase'de 8 yeni tablo, hepsinde RLS açık; 252 konu, 29 ön koşul, 4 alan yüklendi. Doğrulanacak değerler `data/DOGRULANACAKLAR.md`'de.
 - Faz 3: Motor `planner/engine/` (saf Python, Django import etmez): `config`, `types`, `phases`, `capacity` (gün gün kapasite + deneme takvimi), `needs`, `selection` (paket bazlı açgözlü seçim), `projection`; ana giriş `make_plan`. Tüm sabitler `config.py`'de; §6.2'de olmayan birkaç sabit (yuvarlama, son 3 gün deneme yok, ilk 30 gün yalnız TYT, +1 saat senaryosu vb.) dosyanın altına eklendi. `PlanTopic.start_day` (yol haritasındaki kaba hafta için) ve `Plan.budget` JSON'una `fits_all`, `mock_count`, `exam_date` eklendi. `MockExam.task` Faz 4'te Task ile birlikte eklenecek. `big_topic_late`: konu büyük, planda `new_small` bütçesi var ama toplam `new_any` bütçesi konunun öğrenme ihtiyacından küçük. Tanışma: `/baslangic/1-5/`, `OnboardingMiddleware` tamamlanmamış kullanıcıyı kaldığı adıma yönlendirir; adım 4'te ders başına otomatik kayıt (JS) veya "Kaydet" butonu. Adım 4'teki "X / Y konu işaretlendi" sayacı seviyesi 0'dan büyük konuları sayar. Rapor `/plan/rapor/`, yol haritası `/plan/`; "Bunları bırakıyoruz" dersler halinde açılır listedir. Üst barda "Sınava N gün" çipi (`planner.context_processors.countdown`). Testlerde bugün `FrozenTodayMixin` ile 2027-01-04'e sabitlenir.
 - Faz 4: `Task`, `ReviewItem` modelleri; `Task.note` (deneme için "biraz daha zaman ayır" notu) ve `Task.meta` (geri alma bilgisi) alanları eklendi; `MockExam.task` bağlandı. Motor: `scheduler.py` (§6.7 doldurma sırası; zamanlayıcı ilerlemeyi simüle eder, bugünün yeniden üretilmesi için mevcut günler "committed" sayılır), `reviews.py` (1/7/30 gün, başarısızsa 3 gün, sınav gününe/sonrasına yok), `adaptation.py` (kaçırılanlar, seri). Deneme takvimi `known_mock_dates` ile günler arası sabit kalır; analiz görevi sığmazsa ertesi uygun güne kayar (`DayPlan.analysis_minutes`). Tekrar bütçesi (P6'da günlük ~15 dk) görev süresinden (20 dk) küçük olduğu için vadesi gelen tekrarlar sırasıyla tekrar, pratik ve yeni konu bütçesinden borç alır (gün çalışma süresinin en fazla yarısı); tekrarlar zamanında gelir. `ensure_daily_state`: kaçırılanlar `missed` olur, faz değişirse plan yeniden kurulur, kaçırılan iş varsa pencere yeniden üretilir; haftalık değerlendirme ve boost sönümü Faz 5. Bildirim kartları (kaçırılan gün, faz değişimi) oturumda saklanır ve `/bugun/` açılınca bir kez gösterilir. Görev uç noktaları: `/gorev/<id>/tamamla|atla|geri-al/` (JSON + form yedeği; 400/404/409). `/bugun/` ve `/hafta/` artık `planner` uygulamasında; `core`'daki geçici sayfa kaldırıldı. Seri: dinlenme günü ve görevsiz gün seriyi bozmaz. Görev işaretleme JS'i `app.js` içinde.
+- Faz 5: `WeeklyReview` modeli; `StudentProfile.rescope_proposal` (günlük kuru çalıştırma sonucu) ve `rescope_snoozed_until` ("şimdilik kalsın", 7 gün) alanları. Denemeler: `/deneme/` (liste), `/deneme/ekle/` (oturum seç -> D/Y/B -> zayıf konular adımı, aynı URL), `/deneme/<id>/` (yalnızca sahibi), plana ekleme `/deneme/<id>/konu-ekle/<konu>/`. Aynı gün ve oturumdaki planlı deneme görevi otomatik bağlanıp `done` yapılır; tamamlanmış ama sonucu girilmemiş deneme kartında "Deneme sonucunu gir" bağlantısı çıkar. Deneme kaydı ve zayıf konu işaretleme planı yeniden kurar (kalibrasyon ve boost hemen etkili olur). Uyarlama: `engine/adaptation.py` (boost +0.25 en fazla 2.0, haftalık -0.10 en az 1.0; düşük pratik başarısı: en az 5 soru cevaplanmış ve doğruluk < %50 ise konuya +40 dk; tempo; kapsam kuru çalıştırması `propose_rescope`, `PlanInput.capacity_factor` ile). Boost sönümü haftalar arası boşluğa göre günlük senkronda; geri alma ekstra pratik dakikasını da geri alır. Kapsam önerisi: günlük senkronda hesaplanıp profile yazılır, `/bugun/`'de kart olarak çıkar; `/plan/kapsam-onerisi/` her açılışta yeniden kuru çalıştırır; yalnızca "Planı güncelle" (POST) konuları `user_override=force_exclude` yapıp planı `rescope` nedeniyle yeniden kurar. Önerinin koşulu §6.8'deki formüldür; seçim bütçeyi neredeyse tamamen doldurduğu için pratikte tempo ~%95'in altına düşünce öneri çıkar. Tempo en az 3 görevli gün gerektirir. Haftalık değerlendirme: pazartesi ilk girişte geçen haftanın özeti `/degerlendirme/`'de; mesajlar `planner/messages.py`'de (hafta + kullanıcı id'sine göre deterministik, her aşamada 2 varyant). %50–69 aşamasındaki metin "planı hafiflettim" yerine "kaçırdıklarını önümüzdeki günlere yaydım" der, çünkü plan gerçekten otomatik hafifletilmez. `/bugun/` bilgi kartı sırası: kapsam önerisi > faz değişimi > haftalık değerlendirme > kaçırılan gün > tempo uyarısı > tahmini tarih (en fazla 2). Net gösterimleri Türkçe ondalık virgülle (ör. 18,00).
 - Yerel geliştirme Python 3.12 ile (`.venv` 3.12'den yeniden oluşturuldu).
 - YKS 2027 tarihleri tahmini (TYT 19 Haziran, AYT/YDT 20 Haziran 2027). ÖSYM takvimi açıklanınca `data/yks_2027.json` güncellenip `seed_exam_data` yeniden çalıştırılacak.
 

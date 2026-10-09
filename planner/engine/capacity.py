@@ -17,7 +17,7 @@ def raw_minutes_for(day, inp):
     if inp.rest_weekday is not None and day.weekday() == inp.rest_weekday:
         return 0
     base = inp.weekend_minutes if day.weekday() >= 5 else inp.weekday_minutes
-    return base + inp.extra_minutes_per_day
+    return (base + inp.extra_minutes_per_day) * inp.capacity_factor
 
 
 def total_raw_minutes(today, exam_date, weekday_minutes, weekend_minutes, rest_weekday=None):

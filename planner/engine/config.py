@@ -54,3 +54,11 @@ EXTRA_HOUR_SCENARIO_MIN = 60   # "if you study 1 more hour a day" scenario
 MOCK_FREE_LAST_DAYS = 3        # no mock in the last N days before the exam
 EARLY_TYT_ONLY_DAYS = 30       # P6: only the first session is mocked this long when advanced topics are untouched
 EARLY_TYT_ONLY_LEVEL0_SHARE = 0.70
+
+# ---- Added for Phase 5 (adaptation) ----
+WEAK_PRACTICE_MIN_ANSWERED = 5     # answered questions needed before a low accuracy adds extra practice
+PACE_WINDOW_DAYS = 14              # pace = done / planned minutes over the last N days (today excluded)
+PACE_MIN_PLANNED_DAYS = 3          # days with planned tasks needed before pace is trusted
+RESCOPE_SNOOZE_DAYS = 7            # "not now" hides the scope suggestion for this many days
+IMPROVEMENT_MIN_ANSWERED = 10      # answered questions needed in both weeks to report an improvement
+FOCUS_SUBJECT_COUNT = 3            # next week's focus subjects in the weekly review

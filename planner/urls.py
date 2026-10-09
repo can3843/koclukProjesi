@@ -1,6 +1,6 @@
 from django.urls import path
 
-from .views import onboarding, plan, today
+from .views import mocks, onboarding, plan, review, today
 
 urlpatterns = [
     path("baslangic/<int:step>/", onboarding.onboarding_step, name="onboarding_step"),
@@ -11,4 +11,10 @@ urlpatterns = [
     path("gorev/<int:pk>/tamamla/", today.task_action, {"action": "complete"}, name="task_complete"),
     path("gorev/<int:pk>/atla/", today.task_action, {"action": "skip"}, name="task_skip"),
     path("gorev/<int:pk>/geri-al/", today.task_action, {"action": "undo"}, name="task_undo"),
+    path("deneme/", mocks.mock_list, name="mock_list"),
+    path("deneme/ekle/", mocks.mock_add, name="mock_add"),
+    path("deneme/<int:pk>/", mocks.mock_detail, name="mock_detail"),
+    path("deneme/<int:pk>/konu-ekle/<int:topic_id>/", mocks.mock_add_topic, name="mock_add_topic"),
+    path("plan/kapsam-onerisi/", review.rescope, name="rescope"),
+    path("degerlendirme/", review.weekly_reviews, name="weekly_reviews"),
 ]

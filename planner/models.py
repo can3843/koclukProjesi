@@ -42,6 +42,8 @@ class StudentProfile(models.Model):
     )
     onboarding_completed_at = models.DateTimeField(null=True, blank=True)
     last_daily_sync = models.DateField(null=True, blank=True)
+    rescope_snoozed_until = models.DateField(null=True, blank=True)  # "not now" on the scope suggestion
+    rescope_proposal = models.JSONField(default=dict, blank=True)    # topic ids proposed for dropping (daily dry run)
 
     class Meta:
         verbose_name = "öğrenci profili"
@@ -253,3 +255,22 @@ class MockScore(models.Model):
 
     def __str__(self):
         return f"{self.mock} – {self.subject.name}"
+
+
+class WeeklyReview(models.Model):
+    """What the student did in one week (Monday to Sunday) with a short coach message."""
+
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="weekly_reviews")
+    week_start = models.DateField()  # Monday
+    stats = models.JSONField(default=dict)
+    message = models.TextField(blank=True)
+    seen_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        ordering = ["-week_start"]
+        constraints = [models.UniqueConstraint(fields=["user", "week_start"], name="planner_review_user_week_unique")]
+        verbose_name = "haftalık değerlendirme"
+        verbose_name_plural = "haftalık değerlendirmeler"
+
+    def __str__(self):
+        return f"{self.user} – {self.week_start}"

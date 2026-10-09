@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block title %}{{ session.code }} denemesi ekle — rotam{% endblock %}
+
+{% block content %}
+<h1>{{ session.code }} denemesi</h1>
+<p class="muted">Ders ders doğru, yanlış ve boş sayılarını gir. Net = doğru − yanlış ÷ 4.</p>
+
+<form method="post" novalidate>
+  {% csrf_token %}
+  <input type="hidden" name="oturum" value="{{ session.code }}">
+  {% if task_id %}<input type="hidden" name="gorev" value="{{ task_id }}">{% endif %}
+  {% if form.non_field_errors %}<div class="form-error" role="alert">{{ form.non_field_errors|join:" " }}</div>{% endif %}
+
+  <div class="field">
+    <label for="{{ form.taken_on.id_for_label }}">Deneme tarihi</label>
+    {{ form.taken_on }}
+    {% for error in form.taken_on.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+  </div>
+
+  <div class="card">
+    <div class="mock-grid">
+      <span class="mock-head">Ders</span><span class="mock-head">D</span><span class="mock-head">Y</span><span class="mock-head">B</span>
+      {% for row in rows %}
+        <span class="mock-subject">{{ row.subject.name }} <small class="muted">/ {{ row.subject.question_count }}</small></span>
+        <span><label class="sr-only" for="{{ row.correct.id_for_label }}">{{ row.subject.name }} doğru</label>{{ row.correct }}</span>
+        <span><label class="sr-only" for="{{ row.wrong.id_for_label }}">{{ row.subject.name }} yanlış</label>{{ row.wrong }}</span>
+        <span><label class="sr-only" for="{{ row.blank.id_for_label }}">{{ row.subject.name }} boş</label>{{ row.blank }}</span>
+        {% for error in row.correct.errors %}<p class="field-error mock-error">{{ error }}</p>{% endfor %}
+      {% endfor %}
+    </div>
+    <p class="field-help">D: doğru, Y: yanlış, B: boş. Çözmediğin dersleri boş bırakabilirsin.</p>
+  </div>
+
+  <div class="step-actions">
+    <a class="btn btn-secondary" href="{% url 'mock_add' %}">Geri</a>
+    <button type="submit" class="btn">Kaydet</button>
+  </div>
+</form>
+{% endblock %}

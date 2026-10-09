@@ -78,6 +78,7 @@ class PlanInput:
     plan_age_days: int = 0
     extra_minutes_per_day: int = 0   # for the "+1 hour a day" scenario
     known_mock_dates: tuple = ()     # dates of mocks already taken, missed or still planned (keeps the calendar stable)
+    capacity_factor: float = 1.0     # share of the stated capacity the student really delivers (scope dry-run)
 
 
 @dataclass(frozen=True)

@@ -16,6 +16,9 @@
         {% if task.status == "skipped" %} · atlandı{% endif %}
       </p>
       {% if task.note %}<p class="task-note">{{ task.note }}</p>{% endif %}
+      {% if task.kind == "mock" and task.status == "done" and not task.mock_linked and task.session %}
+        <p class="task-note"><a href="{% url 'mock_add' %}?oturum={{ task.session.code }}&amp;gorev={{ task.pk }}">Deneme sonucunu gir →</a></p>
+      {% endif %}
     </div>
     {% if task.status != "pending" %}
       <button type="submit" class="link-btn" data-undo>Geri al</button>
