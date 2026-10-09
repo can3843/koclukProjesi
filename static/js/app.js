@@ -81,6 +81,33 @@
   });
 
   if (storedTheme()) root.setAttribute("data-theme", storedTheme());
+  root.classList.add("js");
+
+  /* Settings page: choose light, dark or "follow the device" (no stored choice). */
+  var themeChoices = document.querySelectorAll("[data-theme-choice]");
+
+  function markThemeChoice() {
+    var saved = storedTheme() || "system";
+    themeChoices.forEach(function (btn) {
+      var active = btn.dataset.themeChoice === saved;
+      btn.classList.toggle("is-active", active);
+      btn.setAttribute("aria-pressed", active ? "true" : "false");
+    });
+  }
+
+  themeChoices.forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      var choice = btn.dataset.themeChoice;
+      if (choice === "system") {
+        root.removeAttribute("data-theme");
+        try { localStorage.removeItem(THEME_KEY); } catch (e) { /* storage unavailable */ }
+      } else {
+        rotam.setTheme(choice);
+      }
+      markThemeChoice();
+    });
+  });
+  if (themeChoices.length) markThemeChoice();
 
   /* ---------- Tasks (today screen): mark done / skip / undo without a page reload ---------- */
 

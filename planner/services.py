@@ -112,7 +112,7 @@ def build_engine_input(user, today, extra_minutes_per_day=0):
     profile = user.student_profile
     track = profile.track
     tests = list(ExamTest.objects.filter(tracks=track).select_related("session").order_by("session__order", "order"))
-    subjects = list(Subject.objects.filter(test__in=tests).order_by("test__session__order", "test__order", "order"))
+    subjects = list(Subject.objects.filter(test__in=tests).select_related("test").order_by("test__session__order", "test__order", "order"))
     topics = list(track_topics(track))
 
     sessions = list(ExamSession.objects.filter(exam=profile.exam).order_by("order"))
@@ -677,6 +677,86 @@ def add_topic_to_plan(user, topic, today=None):
         row.state = TopicProgress.State.NOT_STARTED
     row.save()
     return build_plan(user, today, Plan.Reason.MANUAL)
+
+
+# ---------------------------------------------------------------- settings (Phase 6)
+
+@transaction.atomic
+def update_schedule(user, weekday_minutes, weekend_minutes, rest_weekday, peak_time, today=None):
+    """Save time budget, rest day and peak time. The plan is rebuilt only when the capacity changed."""
+    today = today or timezone.localdate()
+    profile = StudentProfile.objects.select_for_update().get(user=user)
+    capacity_changed = (profile.weekday_minutes, profile.weekend_minutes, profile.rest_weekday) != (
+        weekday_minutes, weekend_minutes, rest_weekday)
+    profile.weekday_minutes = weekday_minutes
+    profile.weekend_minutes = weekend_minutes
+    profile.rest_weekday = rest_weekday
+    profile.peak_time = peak_time
+    profile.save(update_fields=["weekday_minutes", "weekend_minutes", "rest_weekday", "peak_time"])
+    user.student_profile = profile  # build_plan reads the profile through the user
+    if capacity_changed:
+        build_plan(user, today, Plan.Reason.SETTINGS_CHANGE)
+    return capacity_changed
+
+
+@transaction.atomic
+def change_track(user, track, today=None):
+    """Switch to another track of the same exam: progress on shared topics is kept, the plan is made again."""
+    today = today or timezone.localdate()
+    profile = StudentProfile.objects.select_for_update().get(user=user)
+    if track.exam_id != profile.exam_id:
+        raise ValueError("Track belongs to another exam.")
+    if profile.track_id == track.pk:
+        return False
+    profile.track = track
+    profile.rescope_proposal = {}
+    profile.rescope_snoozed_until = None
+    profile.save(update_fields=["track", "rescope_proposal", "rescope_snoozed_until"])
+    user.student_profile = profile  # build_plan reads the profile through the user
+    ensure_progress_rows(user, track)
+    build_plan(user, today, Plan.Reason.SETTINGS_CHANGE)
+    return True
+
+
+@transaction.atomic
+def update_levels(user, levels, today=None):
+    """Change topic levels. `levels` maps topic id -> 0/1/2; learned topics keep their state and are skipped.
+
+    Returns the number of topics that changed; the plan is rebuilt when there is any.
+    """
+    today = today or timezone.localdate()
+    rows = TopicProgress.objects.select_for_update().filter(user=user, topic_id__in=list(levels))
+    changed = []
+    for row in rows:
+        new_level = levels[row.topic_id]
+        if row.state == TopicProgress.State.LEARNED or row.level == new_level:
+            continue
+        row.level = new_level
+        changed.append(row)
+    TopicProgress.objects.bulk_update(changed, ["level"])
+    if changed:
+        build_plan(user, today, Plan.Reason.LEVELS_CHANGED)
+    return len(changed)
+
+
+@transaction.atomic
+def set_topic_override(user, topic, override, today=None):
+    """"Add anyway" (force_include), "take out" (force_exclude) or back to automatic (None) for one topic."""
+    today = today or timezone.localdate()
+    row = TopicProgress.objects.select_for_update().get(user=user, topic=topic)
+    if row.state == TopicProgress.State.LEARNED or row.user_override == override:
+        return False
+    row.user_override = override
+    if override == TopicProgress.Override.FORCE_INCLUDE and row.state == TopicProgress.State.EXCLUDED:
+        row.state = TopicProgress.State.NOT_STARTED
+    row.save(update_fields=["user_override", "state"])
+    build_plan(user, today, Plan.Reason.SETTINGS_CHANGE)
+    return True
+
+
+def delete_account(user):
+    """Remove the user and, through cascades, every piece of their data."""
+    user.delete()
 
 
 # ---------------------------------------------------------------- task actions

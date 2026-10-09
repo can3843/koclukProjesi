@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block title %}Konu seviyeleri — rotam{% endblock %}
+
+{% block content %}
+<p><a href="{% url 'settings' %}">← Ayarlar</a></p>
+<h1>Konu seviyelerin</h1>
+<p class="muted">Öğrendikçe seviyeni yükselt. Kaydedince planın yeni seviyelerine göre yenilenir. Öğrenilmiş konular tekrar sisteminde olduğu için burada değişmez.</p>
+
+<form method="post">
+  {% csrf_token %}
+  {% for group in groups %}
+  <details class="subject-box" id="ders-{{ group.subject.pk }}"{% if forloop.first %} open{% endif %}>
+    <summary>
+      <span class="dot" style="background: {{ group.subject.color }}"></span>
+      <span class="subject-name">{{ group.subject.test.session.code }} {{ group.subject.name }}</span>
+      <span class="counter">{{ group.topics|length }} konu</span>
+    </summary>
+    <ul class="topic-list">
+      {% for item in group.topics %}
+        <li class="topic-row">
+          <span class="topic-name">{{ item.topic.name }}</span>
+          {% if item.learned %}
+            <p class="muted">✅ Öğrenildi — tekrar listesinde.</p>
+          {% else %}
+            <fieldset class="segment" aria-label="{{ item.topic.name }} seviyesi">
+              <label class="seg seg-0"><input type="radio" name="level_{{ item.topic.pk }}" value="0"{% if item.level == 0 %} checked{% endif %}><span>Bilmiyorum</span></label>
+              <label class="seg seg-1"><input type="radio" name="level_{{ item.topic.pk }}" value="1"{% if item.level == 1 %} checked{% endif %}><span>Biraz</span></label>
+              <label class="seg seg-2"><input type="radio" name="level_{{ item.topic.pk }}" value="2"{% if item.level == 2 %} checked{% endif %}><span>İyiyim</span></label>
+            </fieldset>
+          {% endif %}
+        </li>
+      {% endfor %}
+    </ul>
+  </details>
+  {% endfor %}
+  <button type="submit" class="btn btn-block settings-save">Kaydet ve planı güncelle</button>
+</form>
+{% endblock %}

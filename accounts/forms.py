@@ -28,7 +28,13 @@ class RegisterForm(forms.ModelForm):
             "email": forms.EmailInput(attrs={"autocomplete": "email"}),
         }
 
-    field_order = ("first_name", "email", "password1", "password2")
+    # Honeypot: hidden from people (CSS), irresistible to bots that fill every field.
+    website = forms.CharField(required=False, label="Web sitesi", widget=forms.TextInput(attrs={
+        "tabindex": "-1", "autocomplete": "off", "aria-hidden": "true",
+    }))
+
+    field_order = ("first_name", "email", "password1", "password2", "website")
+
 
     def clean_first_name(self):
         name = self.cleaned_data["first_name"].strip()
@@ -44,6 +50,9 @@ class RegisterForm(forms.ModelForm):
 
     def clean(self):
         cleaned = super().clean()
+        if cleaned.get("website"):
+            # shown as a general error: the honeypot field itself is invisible
+            raise ValidationError("Kayıt tamamlanamadı. Lütfen tekrar dene.")
         password1 = cleaned.get("password1")
         password2 = cleaned.get("password2")
         if password1 and password2 and password1 != password2:

@@ -3,7 +3,7 @@ from django.shortcuts import redirect
 from .models import StudentProfile
 
 # Pages a user may open before finishing onboarding.
-EXEMPT_PREFIXES = ("/baslangic/", "/cikis/", "/yonetim/", "/static/", "/giris/", "/kayit/")
+EXEMPT_PREFIXES = ("/baslangic/", "/cikis/", "/yonetim/", "/static/", "/giris/", "/kayit/", "/ayarlar/hesap-sil/")
 
 
 class OnboardingMiddleware:

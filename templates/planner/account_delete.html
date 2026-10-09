@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block title %}Hesabı sil — rotam{% endblock %}
+
+{% block content %}
+<p><a href="{% url 'settings' %}">← Ayarlar</a></p>
+<h1>Hesabını sil</h1>
+<form method="post" class="card" novalidate>
+  {% csrf_token %}
+  <p>Hesabın, planın, görevlerin, denemelerin ve tüm ilerlemen <strong>kalıcı olarak silinir</strong>. Bu işlem geri alınamaz.</p>
+  <div class="field{% if error %} has-error{% endif %}">
+    <label for="id_password">Onaylamak için parolanı gir</label>
+    <input type="password" id="id_password" name="password" autocomplete="current-password" required>
+    {% if error %}<p class="field-error" role="alert">{{ error }}</p>{% endif %}
+  </div>
+  <button type="submit" class="btn btn-block btn-danger">Hesabımı ve verilerimi sil</button>
+  <a class="btn btn-secondary btn-block" href="{% url 'settings' %}">Vazgeç</a>
+</form>
+{% endblock %}

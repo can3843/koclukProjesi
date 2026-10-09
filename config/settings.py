@@ -91,6 +91,15 @@ else:
         }
     }
 
+# Database cache: only used for rate limiting (accounts/ratelimit.py). The table is created by a core migration.
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.db.DatabaseCache",
+        "LOCATION": "rotam_cache",
+        "OPTIONS": {"MAX_ENTRIES": 20000},
+    }
+}
+
 AUTH_USER_MODEL = "accounts.User"
 LOGIN_URL = "/giris/"
 LOGIN_REDIRECT_URL = "/bugun/"
@@ -123,3 +132,8 @@ if not DEBUG:
     SECURE_CONTENT_TYPE_NOSNIFF = True
     X_FRAME_OPTIONS = "DENY"
     SECURE_REFERRER_POLICY = "same-origin"
+    # Vercel already serves HTTPS only and sends X-Forwarded-Proto; these make Django agree (manage.py check --deploy).
+    SECURE_SSL_REDIRECT = env_bool("SECURE_SSL_REDIRECT", True)
+    SECURE_HSTS_SECONDS = int(os.environ.get("SECURE_HSTS_SECONDS", 60 * 60 * 24 * 365))
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True

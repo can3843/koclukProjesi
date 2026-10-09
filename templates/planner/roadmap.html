@@ -46,7 +46,26 @@
 </section>
 
 {% if dropped_count %}
-<p class="notice">Vaktin yetmediği için {{ dropped_count }} konuyu planın dışında bıraktık.</p>
+<section class="section-gap">
+  <h2>Bıraktıklarımız</h2>
+  <p class="notice">Vaktin yetmediği için {{ dropped_count }} konuyu planın dışında bıraktık. İstersen bir konuyu yine de ekleyebilirsin; plan buna göre yenilenir.</p>
+  <details class="subject-box drop-box">
+    <summary><span class="subject-name">Konulara bak</span><span class="counter">{{ dropped_count }} konu</span></summary>
+    <ul class="dropped-list">
+      {% for item in dropped %}
+        <li>
+          <strong>{{ item.topic.name }}</strong> <small class="muted">~{{ item.hours }} saat{% if item.late %} · sınava az kaldığı için büyük konulara başlamıyoruz{% endif %}</small>
+          <form method="post" action="{% url 'topic_override' item.topic.pk %}" class="dropped-add">
+            {% csrf_token %}
+            <input type="hidden" name="override" value="force_include">
+            <input type="hidden" name="next" value="{% url 'plan_roadmap' %}">
+            <button type="submit" class="btn-mini">Bu konuyu yine de ekle</button>
+          </form>
+        </li>
+      {% endfor %}
+    </ul>
+  </details>
+</section>
 {% endif %}
 <a class="btn btn-secondary btn-block" href="{% url 'plan_report' %}">Raporu gör</a>
 {% endblock %}

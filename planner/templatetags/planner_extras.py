@@ -25,3 +25,13 @@ def hours_of(minutes):
 @register.filter
 def percent(ratio):
     return round((ratio or 0) * 100)
+
+
+@register.filter
+def duration_short(minutes):
+    """Minutes to a short form: 150 -> "2 sa 30 dk", 45 -> "45 dk"."""
+    minutes = int(minutes or 0)
+    hours, rest = divmod(minutes, 60)
+    if hours and rest:
+        return f"{hours} sa {rest} dk"
+    return f"{hours} sa" if hours else f"{rest} dk"

@@ -8,6 +8,7 @@
   <p class="lead">Kaldığın yerden devam edelim.</p>
   <form class="card" method="post" novalidate>
     {% csrf_token %}
+    {% if rate_limited %}<div class="form-error" role="alert">{{ rate_limited }}</div>{% endif %}
     {% if form.non_field_errors %}
       <div class="form-error" role="alert">{% for error in form.non_field_errors %}{{ error }} {% endfor %}</div>
     {% endif %}

@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block title %}Konuları plana ekle / çıkar — rotam{% endblock %}
+
+{% block content %}
+<p><a href="{% url 'settings' %}">← Ayarlar</a></p>
+<h1>Plandaki konular</h1>
+<p class="muted">Plan senin vaktine göre en çok net getirecek konuları seçer. Karar yine de senin: bir konuyu ekleyebilir, çıkarabilir ya da otomatik seçime bırakabilirsin.</p>
+
+{% for group in groups %}
+<details class="subject-box" id="ders-{{ group.subject.pk }}">
+  <summary>
+    <span class="dot" style="background: {{ group.subject.color }}"></span>
+    <span class="subject-name">{{ group.subject.test.session.code }} {{ group.subject.name }}</span>
+    <span class="counter">{{ group.topics|length }} konu</span>
+  </summary>
+  <ul class="topic-list">
+    {% for item in group.topics %}
+      <li class="topic-row topic-manage">
+        <div>
+          <span class="topic-name">{{ item.topic.name }}</span>
+          <span class="state-pill state-{{ item.css }}">{{ item.label }}</span>
+        </div>
+        <form method="post" action="{% url 'topic_override' item.topic.pk %}" class="topic-actions">
+          {% csrf_token %}
+          {% if item.can_include %}<button type="submit" name="override" value="force_include" class="btn-mini">Yine de ekle</button>{% endif %}
+          {% if item.can_exclude %}<button type="submit" name="override" value="force_exclude" class="btn-mini">Çıkar</button>{% endif %}
+          {% if item.has_override %}<button type="submit" name="override" value="auto" class="btn-mini">Otomatiğe bırak</button>{% endif %}
+        </form>
+      </li>
+    {% endfor %}
+  </ul>
+</details>
+{% endfor %}
+{% endblock %}

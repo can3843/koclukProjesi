@@ -149,7 +149,8 @@ def plan_roadmap(request):
             "prerequisite": pt.reason_code == PlanTopic.ReasonCode.PREREQUISITE,
         })
     ordered = sorted(subjects.values(), key=lambda g: (g["subject"].test.session.order, g["subject"].test.order, g["subject"].order))
-    dropped_count = sum(1 for pt in plan_topics if not pt.included and pt.reason_code in DROPPED_REASONS)
+    dropped = [pt for pt in plan_topics if not pt.included and pt.reason_code in DROPPED_REASONS]
+    dropped_count = len(dropped)
 
     return render(request, "planner/roadmap.html", {
         "plan": plan,
@@ -157,5 +158,9 @@ def plan_roadmap(request):
         "segments": _phase_segments(today, countdown["date"], plan.phase_code) if countdown else [],
         "groups": ordered,
         "dropped_count": dropped_count,
+        "dropped": [
+            {"topic": pt.topic, "hours": max(1, round(pt.need_minutes / 60)), "late": pt.reason_code == PlanTopic.ReasonCode.BIG_TOPIC_LATE}
+            for pt in sorted(dropped, key=lambda pt: (pt.topic.subject.test.session.order, pt.topic.subject.test.order, pt.topic.subject.order, pt.topic.order))
+        ],
         "rule": PHASE_BY_CODE[plan.phase_code],
     })

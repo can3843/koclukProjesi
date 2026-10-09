@@ -139,3 +139,81 @@ class LoginLogoutTests(TestCase):
         response = self.client.post("/cikis/")
         self.assertRedirects(response, "/", fetch_redirect_response=False)
         self.assertNotIn("_auth_user_id", self.client.session)
+
+
+class LoginRateLimitTests(TestCase):
+    def setUp(self):
+        self.user = make_user()
+
+    def fail(self, times, **extra):
+        for _ in range(times):
+            self.client.post("/giris/", {"username": "elif@example.com", "password": "yanlis-parola"}, **extra)
+
+    def test_ten_failures_block_even_the_right_password(self):
+        self.fail(10)
+        response = self.client.post("/giris/", {"username": "elif@example.com", "password": PASSWORD})
+        self.assertEqual(response.status_code, 429)
+        self.assertContains(response, "Çok fazla deneme", status_code=429)
+        self.assertNotIn("_auth_user_id", self.client.session)
+
+    def test_nine_failures_do_not_block(self):
+        self.fail(9)
+        response = self.client.post("/giris/", {"username": "elif@example.com", "password": PASSWORD})
+        self.assertRedirects(response, "/bugun/", fetch_redirect_response=False)
+
+    def test_successful_login_resets_the_counter(self):
+        self.fail(9)
+        self.client.post("/giris/", {"username": "elif@example.com", "password": PASSWORD})
+        self.client.post("/cikis/")
+        self.fail(9)
+        response = self.client.post("/giris/", {"username": "elif@example.com", "password": PASSWORD})
+        self.assertEqual(response.status_code, 302)
+
+    def test_limit_is_per_client_address(self):
+        self.fail(10, HTTP_X_FORWARDED_FOR="203.0.113.7")
+        blocked = self.client.post("/giris/", {"username": "elif@example.com", "password": PASSWORD}, HTTP_X_FORWARDED_FOR="203.0.113.7")
+        self.assertEqual(blocked.status_code, 429)
+        other = self.client.post("/giris/", {"username": "elif@example.com", "password": PASSWORD}, HTTP_X_FORWARDED_FOR="198.51.100.9")
+        self.assertEqual(other.status_code, 302)
+
+    def test_old_failures_expire(self):
+        from unittest.mock import patch
+
+        import time as time_module
+
+        self.fail(10)
+        later = time_module.time() + 16 * 60
+        with patch("accounts.ratelimit.time.time", return_value=later):
+            response = self.client.post("/giris/", {"username": "elif@example.com", "password": PASSWORD})
+        self.assertEqual(response.status_code, 302)
+
+
+class RegisterHardeningTests(TestCase):
+    def post(self, email="elif@example.com", **extra):
+        data = {"first_name": "Elif", "email": email, "password1": PASSWORD, "password2": PASSWORD}
+        data.update(extra)
+        return self.client.post("/kayit/", data)
+
+    def test_filled_honeypot_creates_no_account(self):
+        response = self.post(website="http://spam.example")
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Kayıt tamamlanamadı")
+        self.assertEqual(User.objects.count(), 0)
+
+    def test_empty_honeypot_is_invisible_but_present(self):
+        response = self.client.get("/kayit/")
+        self.assertContains(response, 'name="website"')
+        self.assertContains(response, "hp-field")
+        self.assertContains(response, 'tabindex="-1"')
+
+    def test_eleventh_attempt_within_an_hour_is_blocked(self):
+        for i in range(10):
+            self.client.post("/kayit/", {"first_name": "E", "email": f"x{i}@example.com"})  # invalid, still counted
+        response = self.post(email="gercek@example.com")
+        self.assertEqual(response.status_code, 429)
+        self.assertEqual(User.objects.count(), 0)
+
+    def test_attempts_under_the_limit_work(self):
+        for i in range(9):
+            self.client.post("/kayit/", {"first_name": "E", "email": f"x{i}@example.com"})
+        self.assertEqual(self.post(email="gercek@example.com").status_code, 302)

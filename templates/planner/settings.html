@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+{% load static planner_extras %}
+
+{% block title %}Ayarlar — rotam{% endblock %}
+
+{% block content %}
+<h1>Profil ve ayarlar</h1>
+<p class="muted">Merhaba {{ user.first_name }}. Vaktin ya da hayatın değişirse planını buradan güncelleyebilirsin.</p>
+
+<form method="post" id="time-form" data-weekdays="{{ weekdays }}" data-weekends="{{ weekends }}" novalidate class="settings-form">
+  {% csrf_token %}
+  <input type="hidden" name="section" value="schedule">
+  <h2>Günlük vakit</h2>
+
+  <div class="card slider-card">
+    <label for="id_weekday_minutes">Hafta içi</label>
+    <p class="slider-big">Günde <strong data-out="weekday_minutes">{{ weekday_value|duration_tr }}</strong></p>
+    <input type="range" id="id_weekday_minutes" name="weekday_minutes" min="30" max="600" step="30" value="{{ weekday_value }}" data-slider>
+    <div class="slider-scale"><span>30 dk</span><span>10 saat</span></div>
+    {% for error in time_form.weekday_minutes.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+  </div>
+
+  <div class="card slider-card">
+    <label for="id_weekend_minutes">Hafta sonu</label>
+    <p class="slider-big">Günde <strong data-out="weekend_minutes">{{ weekend_value|duration_tr }}</strong></p>
+    <input type="range" id="id_weekend_minutes" name="weekend_minutes" min="30" max="660" step="30" value="{{ weekend_value }}" data-slider>
+    <div class="slider-scale"><span>30 dk</span><span>11 saat</span></div>
+    {% for error in time_form.weekend_minutes.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+  </div>
+
+  <p class="notice notice-warning" data-heavy-warning{% if weekday_value <= 540 and weekend_value <= 540 %} hidden{% endif %}>
+    Bu çok yoğun bir tempo. Uzun vadede yorulmamak için biraz daha az planlayıp dinlenmeye de yer açabilirsin.
+  </p>
+  <p class="card total-card">Sınava kadar yaklaşık <strong data-total>{{ total_hours }}</strong> saatin var.</p>
+
+  <h2>Verimli saat</h2>
+  <div class="choice-grid">
+    {% for value, label in habits_form.peak_time.field.choices %}
+      <label class="choice-card choice-icon">
+        <input type="radio" name="peak_time" value="{{ value }}" required{% if habits_form.peak_time.value == value %} checked{% endif %}>
+        <span class="choice-body">
+          <span class="choice-emoji" aria-hidden="true">{% if value == "morning" %}☀️{% elif value == "noon" %}🌤️{% elif value == "evening" %}🌆{% else %}🌙{% endif %}</span>
+          <strong>{{ label }}</strong>
+        </span>
+      </label>
+    {% endfor %}
+  </div>
+  {% for error in habits_form.peak_time.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+
+  <h2>Dinlenme günü</h2>
+  <p class="muted">Haftada bir gün dinlenmek, uzun vadede daha çok net getirir.</p>
+  <div class="choice-grid choice-grid-days">
+    {% for value, label in habits_form.rest_weekday.field.choices %}
+      <label class="choice-card choice-small">
+        <input type="radio" name="rest_weekday" value="{{ value }}"{% if habits_form.rest_weekday.value|default_if_none:""|stringformat:"s" == value %} checked{% endif %}>
+        <span class="choice-body"><strong>{{ label }}</strong></span>
+      </label>
+    {% endfor %}
+  </div>
+  {% for error in habits_form.rest_weekday.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+
+  <button type="submit" class="btn btn-block settings-save">Kaydet ve planı güncelle</button>
+</form>
+
+<section class="section-gap">
+  <h2>Görünüm</h2>
+  <div class="card">
+    <p class="muted">Gece çalışıyorsan koyu tema gözlerini yormaz.</p>
+    <div class="pills" role="group" aria-label="Tema" data-theme-choices>
+      <button type="button" class="pill" data-theme-choice="system">Cihaza göre</button>
+      <button type="button" class="pill" data-theme-choice="light">Açık</button>
+      <button type="button" class="pill" data-theme-choice="dark">Koyu</button>
+    </div>
+  </div>
+</section>
+
+<section class="section-gap">
+  <h2>Konular</h2>
+  <div class="card link-list">
+    <a href="{% url 'settings_levels' %}">
+      <strong>Konu seviyelerini düzenle</strong>
+      <small class="muted">Bir konuda ilerlediysen seviyeni güncelle; plan buna göre yenilenir.</small>
+    </a>
+    <a href="{% url 'settings_topics' %}">
+      <strong>Konuları plana ekle / çıkar</strong>
+      <small class="muted">Planın dışında kalan bir konuyu yine de eklemek ya da bir konuyu çıkarmak için.</small>
+    </a>
+  </div>
+</section>
+
+<section class="section-gap">
+  <h2>Alan</h2>
+  <form method="post" class="card" novalidate>
+    {% csrf_token %}
+    <input type="hidden" name="section" value="track">
+    <p class="notice notice-warning">Alanı değiştirirsen plan yeniden kurulur. Ortak konulardaki (ör. TYT) ilerlemen korunur; bekleyen görevlerin silinip yeniden hazırlanır.</p>
+    <div class="choice-list">
+      {% for track in tracks %}
+        <label class="choice-card">
+          <input type="radio" name="track" value="{{ track.pk }}"{% if track_form.track.value == track.pk|stringformat:"s" %} checked{% endif %}>
+          <span class="choice-body"><strong>{{ track.name }}</strong></span>
+        </label>
+      {% endfor %}
+    </div>
+    {% for error in track_form.track.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+    <label class="check-row"><input type="checkbox" name="confirm" value="1"> Alanımı değiştirmek ve planımın yeniden kurulmasını istiyorum.</label>
+    <button type="submit" class="btn btn-secondary btn-block">Alanı değiştir</button>
+  </form>
+</section>
+
+<section class="section-gap">
+  <h2>Hesap</h2>
+  <div class="card link-list">
+    <span><strong>{{ user.email }}</strong></span>
+    <a href="{% url 'account_delete' %}" class="danger-link">
+      <strong>Hesabımı ve tüm verilerimi sil</strong>
+      <small class="muted">Bu işlem geri alınamaz.</small>
+    </a>
+  </div>
+</section>
+{% endblock %}
+
+{% block scripts %}<script src="{% static 'js/onboarding.js' %}" defer></script>{% endblock %}

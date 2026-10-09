@@ -11,12 +11,12 @@
     <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 8h6M9 12h6M9 16h3"/></svg>
     <span>Deneme</span>
   </a>
-  <span class="nav-item is-disabled" aria-disabled="true" title="Yakında">
+  <a class="nav-item {% if request.resolver_match.url_name == 'progress' %}is-active{% endif %}" href="{% url 'progress' %}"{% if request.resolver_match.url_name == 'progress' %} aria-current="page"{% endif %}>
     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>
     <span>İlerleme</span>
-  </span>
-  <span class="nav-item is-disabled" aria-disabled="true" title="Yakında">
+  </a>
+  <a class="nav-item {% if request.resolver_match.url_name|slice:':8' == 'settings' or request.resolver_match.url_name == 'topic_override' %}is-active{% endif %}" href="{% url 'settings' %}"{% if request.resolver_match.url_name|slice:':8' == 'settings' %} aria-current="page"{% endif %}>
     <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>
     <span>Profil</span>
-  </span>
+  </a>
 </nav>
