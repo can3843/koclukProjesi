@@ -1026,7 +1026,7 @@ Her faz kendi içinde çalışır, test edilebilir ve deploy edilebilir bir duru
 - [x] `settings.py` §11.2'ye göre
 - [x] Geçici anasayfa ("rotam yakında") `static/css/main.css` yükleyerek
 - [x] RLS migration'ı (§11.3)
-- [ ] Supabase'e migration, Vercel'e ilk deploy
+- [x] Supabase'e migration, Vercel'e ilk deploy
 
 **Kabul kriterleri:** Yerelde `runserver` çalışıyor; Vercel URL'sinde sayfa CSS'iyle açılıyor; `/admin/` stilleriyle açılıyor; Supabase'de tablolar var ve RLS açık; Django hâlâ okuyup yazabiliyor.
 
