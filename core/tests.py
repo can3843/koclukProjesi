@@ -24,13 +24,13 @@ class HomePageTests(TestCase):
         self.assertEqual(response.status_code, 200)
 
 
-class TodayPlaceholderTests(TestCase):
+class TodayPageTests(TestCase):
     def test_today_page_greets_user_and_shows_tabbar(self):
         user = get_user_model().objects.create_user("elif@example.com", "gizli-parola-123", first_name="Elif")
         StudentProfile.objects.create(user=user, onboarding_step=5, onboarding_completed_at=timezone.now())
         self.client.force_login(user)
         response = self.client.get("/bugun/")
-        self.assertContains(response, "Merhaba Elif!")
+        self.assertContains(response, "Elif")
         self.assertContains(response, "Bugün")
         self.assertContains(response, "İlerleme")
         # logout is a POST form with CSRF protection

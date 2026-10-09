@@ -1,0 +1,12 @@
+<svg class="ring" viewBox="0 0 80 80" width="88" height="88" role="img" aria-label="Bugünün ilerlemesi %{{ percent }}" data-ring>
+  <defs>
+    <linearGradient id="ringGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#5B5BD6"/>
+      <stop offset="1" stop-color="#FF7A59"/>
+    </linearGradient>
+  </defs>
+  <circle class="ring-track" cx="40" cy="40" r="34" fill="none" stroke-width="8"/>
+  <circle class="ring-value" cx="40" cy="40" r="34" fill="none" stroke-width="8" stroke="url(#ringGrad)"
+          stroke-linecap="round" transform="rotate(-90 40 40)" stroke-dasharray="213.63" stroke-dashoffset="{{ ring_offset }}" data-ring-value data-percent="{{ percent }}"/>
+  <text x="40" y="45" text-anchor="middle" class="ring-text" data-ring-text>%{{ percent }}</text>
+</svg>

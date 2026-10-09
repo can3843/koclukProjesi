@@ -1,0 +1,44 @@
+<article class="task-card is-{{ task.status }}" id="task-{{ task.pk }}" data-task data-task-id="{{ task.pk }}" data-kind="{{ task.kind }}" style="--task-color: {{ task.color }}">
+  <form method="post" action="{% if task.status == 'pending' %}{% url 'task_complete' task.pk %}{% else %}{% url 'task_undo' task.pk %}{% endif %}" class="task-main" data-task-form>
+    {% csrf_token %}
+    {% if task.status == "pending" %}
+      <button type="submit" class="check" aria-label="Yaptım olarak işaretle: {{ task.title }}" data-check></button>
+    {% elif task.status == "done" %}
+      <span class="check is-checked" aria-label="Yapıldı" role="img">✓</span>
+    {% else %}
+      <span class="check is-skipped" aria-label="Atlandı" role="img">–</span>
+    {% endif %}
+    <div class="task-body">
+      <h3 class="task-title"><span aria-hidden="true">{{ task.icon }}</span> {{ task.title }}</h3>
+      <p class="task-meta">
+        {{ task.minutes }} dk{% if task.peak_label %} · <span class="peak-label">{{ task.peak_label }}</span>{% endif %}
+        {% if task.status == "done" and task.correct is not None %} · <strong>{{ task.correct }}D {{ task.wrong }}Y {{ task.blank }}B</strong>{% endif %}
+        {% if task.status == "skipped" %} · atlandı{% endif %}
+      </p>
+      {% if task.note %}<p class="task-note">{{ task.note }}</p>{% endif %}
+    </div>
+    {% if task.status != "pending" %}
+      <button type="submit" class="link-btn" data-undo>Geri al</button>
+    {% endif %}
+    {% if task.status == "pending" and task.takes_counts %}
+      <details class="dyb" data-dyb>
+        <summary>Soru sonuçlarını gir <span class="muted">(isteğe bağlı)</span></summary>
+        <div class="dyb-grid">
+          <label>Doğru <input type="number" name="correct" min="0" inputmode="numeric" placeholder="0"></label>
+          <label>Yanlış <input type="number" name="wrong" min="0" inputmode="numeric" placeholder="0"></label>
+          <label>Boş <input type="number" name="blank" min="0" inputmode="numeric" placeholder="0"></label>
+        </div>
+        <div class="dyb-actions">
+          <button type="submit" class="btn btn-small" data-dyb-save>Kaydet</button>
+          <button type="submit" name="skip_counts" value="1" class="btn btn-small btn-secondary" data-dyb-skip>Geç</button>
+        </div>
+      </details>
+    {% endif %}
+  </form>
+  {% if task.status == "pending" %}
+    <form method="post" action="{% url 'task_skip' task.pk %}" class="task-skip" data-task-form>
+      {% csrf_token %}
+      <button type="submit" class="link-btn" data-skip>Bugün yapamayacağım</button>
+    </form>
+  {% endif %}
+</article>

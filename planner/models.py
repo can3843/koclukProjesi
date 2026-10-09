@@ -153,12 +153,76 @@ class PlanTopic(models.Model):
         return f"{self.plan_id}: {self.topic_id} ({self.reason_code})"
 
 
+class ReviewItem(models.Model):
+    """Spaced repetition queue entry: a learned topic that is due for review (1, 7, 30 days)."""
+
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="review_items")
+    topic = models.ForeignKey("catalog.Topic", on_delete=models.CASCADE, related_name="+")
+    due_date = models.DateField()
+    interval_index = models.PositiveSmallIntegerField(default=0)
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=["user", "topic"], condition=Q(is_active=True), name="planner_one_active_review_per_topic"),
+        ]
+        indexes = [models.Index(fields=["user", "due_date"])]
+
+    def __str__(self):
+        return f"{self.user} – {self.topic} ({self.due_date})"
+
+
+class Task(models.Model):
+    class Kind(models.TextChoices):
+        LEARN = "learn", "Konu çalışması"
+        PRACTICE = "practice", "Soru çözümü"
+        REVIEW = "review", "Tekrar"
+        MOCK = "mock", "Deneme"
+        MOCK_REVIEW = "mock_review", "Deneme analizi"
+
+    class Status(models.TextChoices):
+        PENDING = "pending", "Bekliyor"
+        DONE = "done", "Yapıldı"
+        SKIPPED = "skipped", "Atlandı"
+        MISSED = "missed", "Kaçırıldı"
+
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="tasks")
+    plan = models.ForeignKey(Plan, on_delete=models.CASCADE, related_name="tasks")
+    date = models.DateField()
+    kind = models.CharField(max_length=12, choices=Kind.choices)
+    topic = models.ForeignKey("catalog.Topic", null=True, blank=True, on_delete=models.SET_NULL, related_name="+")
+    subject = models.ForeignKey("catalog.Subject", null=True, blank=True, on_delete=models.SET_NULL, related_name="+")
+    session = models.ForeignKey("catalog.ExamSession", null=True, blank=True, on_delete=models.SET_NULL, related_name="+")
+    title = models.CharField(max_length=200)
+    note = models.CharField(max_length=200, blank=True)
+    minutes = models.PositiveSmallIntegerField()
+    question_target = models.PositiveSmallIntegerField(null=True, blank=True)
+    order = models.PositiveSmallIntegerField(default=0)
+    is_peak = models.BooleanField(default=False)
+    status = models.CharField(max_length=8, choices=Status.choices, default=Status.PENDING)
+    correct = models.PositiveSmallIntegerField(null=True, blank=True)
+    wrong = models.PositiveSmallIntegerField(null=True, blank=True)
+    blank = models.PositiveSmallIntegerField(null=True, blank=True)
+    completed_at = models.DateTimeField(null=True, blank=True)
+    review_item = models.ForeignKey(ReviewItem, null=True, blank=True, on_delete=models.SET_NULL, related_name="tasks")
+    meta = models.JSONField(default=dict, blank=True)  # undo information, written when a task is completed
+
+    class Meta:
+        ordering = ["date", "order", "id"]
+        indexes = [models.Index(fields=["user", "date"])]
+        verbose_name = "görev"
+        verbose_name_plural = "görevler"
+
+    def __str__(self):
+        return f"{self.date} {self.title}"
+
+
 class MockExam(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="mock_exams")
     session = models.ForeignKey("catalog.ExamSession", on_delete=models.PROTECT, related_name="+")
     taken_on = models.DateField("çözüldüğü tarih")
     weak_topics = models.ManyToManyField("catalog.Topic", blank=True, related_name="+")
-    # `task` (link to a planned mock task) is added together with the Task model in Phase 4.
+    task = models.ForeignKey(Task, null=True, blank=True, on_delete=models.SET_NULL, related_name="+")
 
     class Meta:
         ordering = ["-taken_on", "-id"]

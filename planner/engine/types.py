@@ -77,6 +77,7 @@ class PlanInput:
     pace: Optional[float] = None
     plan_age_days: int = 0
     extra_minutes_per_day: int = 0   # for the "+1 hour a day" scenario
+    known_mock_dates: tuple = ()     # dates of mocks already taken, missed or still planned (keeps the calendar stable)
 
 
 @dataclass(frozen=True)
@@ -93,6 +94,8 @@ class DayPlan:
     new_small: float
     practice: float
     review: float
+    mock_duration: float = 0.0       # minutes of the mock exam itself
+    analysis_minutes: float = 0.0    # minutes of mock analysis scheduled on this day (own or carried over)
 
 
 @dataclass(frozen=True)

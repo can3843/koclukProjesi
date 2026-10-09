@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+
+{% block title %}Bugün — rotam{% endblock %}
+
+{% block content %}
+<h1 class="greeting">{{ greeting }} {{ first_name }} {{ emoji }}</h1>
+
+{% for card in cards %}{% include "partials/info_card.html" %}{% endfor %}
+
+{% if exam_over %}
+  <div class="card empty-state">
+    <div class="emoji" aria-hidden="true">🍀</div>
+    <h2>Sınav günü geldi</h2>
+    <p class="muted">Bu zamana kadar çok emek verdin. Başarılar, kendine güven!</p>
+  </div>
+{% else %}
+
+<section class="card day-summary" data-day-summary>
+  {% include "partials/progress_ring.html" %}
+  <div class="day-summary-text">
+    <p class="day-count"><strong data-done-count>{{ summary.done_count }}</strong> / <span data-total-count>{{ summary.total_count }}</span> görev</p>
+    <p class="muted"><span data-done-minutes>{{ summary.done_minutes }}</span> / <span data-planned-minutes>{{ summary.planned_minutes }}</span> dk</p>
+    <p class="streak" title="Üst üste çalıştığın gün sayısı">🔥 <strong data-streak>{{ streak }}</strong> gün seri</p>
+  </div>
+</section>
+
+{% if prep %}
+<section class="card prep-card">
+  <h2>🎒 Sınav günü hazırlık</h2>
+  <ul>{% for item in prep %}<li>{{ item }}</li>{% endfor %}</ul>
+</section>
+{% endif %}
+
+<div class="celebrate" data-celebrate{% if not all_done %} hidden{% endif %}>
+  <p>Bugünü tamamladın! Yarın görüşürüz 👋</p>
+</div>
+
+{% if is_rest %}
+  <div class="card empty-state">
+    <div class="emoji" aria-hidden="true">🌿</div>
+    <h2>Bugün dinlenme günün 🌿</h2>
+    <p class="muted">Kendine iyi bak.</p>
+  </div>
+{% elif tasks %}
+  <section class="task-list" aria-label="Bugünün görevleri" data-task-list>
+    {% for task in tasks %}{% include "partials/task_card.html" %}{% endfor %}
+  </section>
+{% else %}
+  <div class="card empty-state">
+    <div class="emoji" aria-hidden="true">🌿</div>
+    <p class="muted">Bugün için görev yok. Biraz dinlen, yarın devam! 🌿</p>
+  </div>
+{% endif %}
+
+{% endif %}
+
+<p class="auth-foot"><a href="{% url 'week' %}">Önümüzdeki 7 güne bak →</a></p>
+{% endblock %}
+

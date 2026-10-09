@@ -1071,14 +1071,14 @@ Her faz kendi içinde çalışır, test edilebilir ve deploy edilebilir bir duru
 
 ### Faz 4 — Günlük görevler ve tekrar sistemi
 
-- [ ] `Task`, `ReviewItem` modelleri + RLS migration güncellemesi
-- [ ] Motor: `scheduler.py`, `reviews.py`, `adaptation.py`'nin kaçırılan/atlanan görev kısmı (§6.7, §6.8)
-- [ ] `services.ensure_daily_state` (§6.9; haftalık değerlendirme ve boost kısmı Faz 5'te) ve `build_plan`'ın pencere üretimi
-- [ ] `/bugun/` (§8.3) ve `/hafta/`
-- [ ] Görev uç noktaları (§8.1): tamamla, atla, geri al — JSON ve form yedeği
-- [ ] `app.js`: görevi işaretleme, D/Y/B alanı, ilerleme halkasının anlık güncellenmesi, gün bitti kutlaması
-- [ ] Çalışma serisi hesabı (en az bir görevi `done` olan gün; dinlenme günü seriyi bozmaz)
-- [ ] Testler: §6.10'daki 5, 6, 7, 8, 9, 10 numaralı senaryolar; aynı günde iki kez `ensure_daily_state`'in çift görev üretmemesi; başkasının görevine 404; gelecekteki görevin tamamlanamaması
+- [x] `Task`, `ReviewItem` modelleri + RLS migration güncellemesi
+- [x] Motor: `scheduler.py`, `reviews.py`, `adaptation.py`'nin kaçırılan/atlanan görev kısmı (§6.7, §6.8)
+- [x] `services.ensure_daily_state` (§6.9; haftalık değerlendirme ve boost kısmı Faz 5'te) ve `build_plan`'ın pencere üretimi
+- [x] `/bugun/` (§8.3) ve `/hafta/`
+- [x] Görev uç noktaları (§8.1): tamamla, atla, geri al — JSON ve form yedeği
+- [x] `app.js`: görevi işaretleme, D/Y/B alanı, ilerleme halkasının anlık güncellenmesi, gün bitti kutlaması
+- [x] Çalışma serisi hesabı (en az bir görevi `done` olan gün; dinlenme günü seriyi bozmaz)
+- [x] Testler: §6.10'daki 5, 6, 7, 8, 9, 10 numaralı senaryolar; aynı günde iki kez `ensure_daily_state`'in çift görev üretmemesi; başkasının görevine 404; gelecekteki görevin tamamlanamaması
 
 **Kabul kriterleri:** Kullanıcı her gün mantıklı, karışık, kapasitesini aşmayan görevler görüyor; kaçırılan gün yığılmadan yayılıyor; tekrarlar 1/7/30 günde geliyor.
 
@@ -1134,7 +1134,7 @@ Her faz kendi içinde çalışır, test edilebilir ve deploy edilebilir bir duru
 - [x] Faz 1 — Tasarım sistemi, karşılama ve üyelik
 - [x] Faz 2 — Sınav kataloğu ve konu veritabanı (Supabase'e migration ve seed uygulandı)
 - [x] Faz 3 — Tanışma, plan motoru çekirdeği ve gerçekçilik raporu (Supabase'e migration uygulandı)
-- [ ] Faz 4 — Günlük görevler ve tekrar sistemi
+- [x] Faz 4 — Günlük görevler ve tekrar sistemi (Supabase'e migration uygulandı)
 - [ ] Faz 5 — Denemeler, uyarlama ve haftalık değerlendirme
 - [ ] Faz 6 — İlerleme paneli, ayarlar ve sağlamlaştırma
 
@@ -1148,6 +1148,7 @@ Her faz kendi içinde çalışır, test edilebilir ve deploy edilebilir bir duru
 - Faz 2: `catalog` modelleri, `validation.py` (soru toplamı uyarısı, test toplamı/ön koşul döngüsü/kendi kendine ön koşul/farklı sınav hataları), `check_exam_data` ve `seed_exam_data` (slug'a göre upsert; doğrulama hata verirse transaction geri alınır). `data/yks_2027.json`: 3 oturum, 9 test, 23 ders, 252 konu, 4 alan; hepsi `is_estimated=true`. Konu başlıkları MEB'in 2026 YKS konu-kazanım PDF'inden, soru ağırlıkları ve süreler tahmini (bkz. `data/KAYNAKLAR.md`, `data/DOGRULANACAKLAR.md`). RLS: `core/migrations/0002_enable_rls_catalog.py`. Veriyi yeniden üretmek için kullanılan tek seferlik betik repoda yok; JSON elle ya da `/yonetim/` ile güncellenir.
 - Faz 2: Supabase'de 8 yeni tablo, hepsinde RLS açık; 252 konu, 29 ön koşul, 4 alan yüklendi. Doğrulanacak değerler `data/DOGRULANACAKLAR.md`'de.
 - Faz 3: Motor `planner/engine/` (saf Python, Django import etmez): `config`, `types`, `phases`, `capacity` (gün gün kapasite + deneme takvimi), `needs`, `selection` (paket bazlı açgözlü seçim), `projection`; ana giriş `make_plan`. Tüm sabitler `config.py`'de; §6.2'de olmayan birkaç sabit (yuvarlama, son 3 gün deneme yok, ilk 30 gün yalnız TYT, +1 saat senaryosu vb.) dosyanın altına eklendi. `PlanTopic.start_day` (yol haritasındaki kaba hafta için) ve `Plan.budget` JSON'una `fits_all`, `mock_count`, `exam_date` eklendi. `MockExam.task` Faz 4'te Task ile birlikte eklenecek. `big_topic_late`: konu büyük, planda `new_small` bütçesi var ama toplam `new_any` bütçesi konunun öğrenme ihtiyacından küçük. Tanışma: `/baslangic/1-5/`, `OnboardingMiddleware` tamamlanmamış kullanıcıyı kaldığı adıma yönlendirir; adım 4'te ders başına otomatik kayıt (JS) veya "Kaydet" butonu. Adım 4'teki "X / Y konu işaretlendi" sayacı seviyesi 0'dan büyük konuları sayar. Rapor `/plan/rapor/`, yol haritası `/plan/`; "Bunları bırakıyoruz" dersler halinde açılır listedir. Üst barda "Sınava N gün" çipi (`planner.context_processors.countdown`). Testlerde bugün `FrozenTodayMixin` ile 2027-01-04'e sabitlenir.
+- Faz 4: `Task`, `ReviewItem` modelleri; `Task.note` (deneme için "biraz daha zaman ayır" notu) ve `Task.meta` (geri alma bilgisi) alanları eklendi; `MockExam.task` bağlandı. Motor: `scheduler.py` (§6.7 doldurma sırası; zamanlayıcı ilerlemeyi simüle eder, bugünün yeniden üretilmesi için mevcut günler "committed" sayılır), `reviews.py` (1/7/30 gün, başarısızsa 3 gün, sınav gününe/sonrasına yok), `adaptation.py` (kaçırılanlar, seri). Deneme takvimi `known_mock_dates` ile günler arası sabit kalır; analiz görevi sığmazsa ertesi uygun güne kayar (`DayPlan.analysis_minutes`). Tekrar bütçesi (P6'da günlük ~15 dk) görev süresinden (20 dk) küçük olduğu için vadesi gelen tekrarlar sırasıyla tekrar, pratik ve yeni konu bütçesinden borç alır (gün çalışma süresinin en fazla yarısı); tekrarlar zamanında gelir. `ensure_daily_state`: kaçırılanlar `missed` olur, faz değişirse plan yeniden kurulur, kaçırılan iş varsa pencere yeniden üretilir; haftalık değerlendirme ve boost sönümü Faz 5. Bildirim kartları (kaçırılan gün, faz değişimi) oturumda saklanır ve `/bugun/` açılınca bir kez gösterilir. Görev uç noktaları: `/gorev/<id>/tamamla|atla|geri-al/` (JSON + form yedeği; 400/404/409). `/bugun/` ve `/hafta/` artık `planner` uygulamasında; `core`'daki geçici sayfa kaldırıldı. Seri: dinlenme günü ve görevsiz gün seriyi bozmaz. Görev işaretleme JS'i `app.js` içinde.
 - Yerel geliştirme Python 3.12 ile (`.venv` 3.12'den yeniden oluşturuldu).
 - YKS 2027 tarihleri tahmini (TYT 19 Haziran, AYT/YDT 20 Haziran 2027). ÖSYM takvimi açıklanınca `data/yks_2027.json` güncellenip `seed_exam_data` yeniden çalıştırılacak.
 

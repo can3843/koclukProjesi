@@ -1,5 +1,6 @@
 """Day by day capacity, mock calendar and budgets (CLAUDE.md §6.3, §6.4)."""
 
+from collections import Counter
 from datetime import timedelta
 
 from . import config
@@ -62,18 +63,24 @@ def _early_tyt_only(inp):
 
 
 def build_days(inp):
-    """Return one DayPlan per day from today up to the day before the exam, in order."""
+    """Return one DayPlan per day from today up to the day before the exam, in order.
+
+    Mocks that are already known (taken, missed or still planned) keep the calendar stable
+    when the plan is recomputed on a later day.
+    """
     exam = exam_day(inp)
     durations = {s.code: s.duration_minutes for s in inp.sessions}
     codes = inp.session_codes or tuple(durations)
     tyt_only_early = _early_tyt_only(inp)
 
+    known = sorted(inp.known_mock_dates)
+    last_mock = known[-1] if known else None
+    mocks_in_week = Counter(d.isocalendar()[:2] for d in known)
+    p0_mocks = sum(1 for d in known if 0 <= (exam - d).days <= 7)
+    mock_index = len(known)
+    carry_analysis = 0.0
+
     days = []
-    last_mock = None
-    mocks_in_week = {}
-    p0_mocks = 0
-    mock_index = 0
-    carry = 0.0
     day = inp.today
     while day < exam:
         days_left = (exam - day).days
@@ -87,8 +94,14 @@ def build_days(inp):
             raw = min(raw, config.LAST_DAY_MAX_MIN)
         net = _round_to(raw * (1 - config.BUFFER_RATIO), config.CAPACITY_ROUNDING_MIN) if raw else 0.0
 
-        mock_session = None
-        mock_minutes = 0.0
+        # analysis of an earlier mock that did not fit on its own day
+        available = float(net)
+        analysis_today = 0.0
+        if carry_analysis > 0 and net >= config.MIN_BLOCK_MIN:
+            analysis_today = min(carry_analysis, available)
+            carry_analysis -= analysis_today
+            available -= analysis_today
+
         week_key = day.isocalendar()[:2]
         can_mock = (
             not is_rest
@@ -98,22 +111,28 @@ def build_days(inp):
             and mocks_in_week.get(week_key, 0) < rule.mock_max_per_week
             and not (rule.code == "P0" and p0_mocks >= 1)
         )
+
+        mock_session = None
+        mock_duration = 0.0
+        mock_minutes = 0.0
         if can_mock and codes:
             early = tyt_only_early and (day - inp.today).days < config.EARLY_TYT_ONLY_DAYS
             mock_session = codes[0] if early else codes[mock_index % len(codes)]
-            mock_minutes = durations.get(mock_session, 0) + config.MOCK_ANALYSIS_MIN
+            mock_duration = float(durations.get(mock_session, 0))
+            mock_minutes = mock_duration + config.MOCK_ANALYSIS_MIN
             mock_index += 1
             last_mock = day
-            mocks_in_week[week_key] = mocks_in_week.get(week_key, 0) + 1
+            mocks_in_week[week_key] += 1
             if rule.code == "P0":
                 p0_mocks += 1
-
-        available = max(0.0, net - carry)
-        carry = max(0.0, carry - net)
-        study = max(0.0, available - mock_minutes)
-        # analysis that does not fit today moves to tomorrow
-        overflow = max(0.0, mock_minutes - available)
-        carry += min(overflow, config.MOCK_ANALYSIS_MIN)
+            if available >= mock_duration + config.MOCK_ANALYSIS_MIN:
+                analysis_today += config.MOCK_ANALYSIS_MIN
+                study = available - mock_duration - config.MOCK_ANALYSIS_MIN
+            else:
+                carry_analysis += config.MOCK_ANALYSIS_MIN  # analysis moves to the next free day
+                study = max(0.0, available - mock_duration)
+        else:
+            study = available
 
         new = study * rule.new
         days.append(
@@ -130,6 +149,8 @@ def build_days(inp):
                 new_small=new if rule.code == "P2" else 0.0,
                 practice=study * rule.practice,
                 review=study * rule.review,
+                mock_duration=mock_duration,
+                analysis_minutes=analysis_today,
             )
         )
         day += timedelta(days=1)

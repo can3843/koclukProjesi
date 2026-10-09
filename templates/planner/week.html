@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+
+{% block title %}Bu hafta — rotam{% endblock %}
+
+{% block content %}
+<h1>Önümüzdeki 7 gün</h1>
+<p class="muted">Görevler her gün biraz güncellenir; çalışamadığın günlerin görevleri sonraki günlere yayılır.</p>
+
+{% for day in days %}
+  <section class="card week-day{% if day.is_today %} is-today{% endif %}">
+    <header>
+      <h2>{{ day.label }}</h2>
+      {% if day.minutes %}<span class="muted">{{ day.minutes }} dk</span>{% endif %}
+    </header>
+    {% if day.is_rest %}
+      <p class="muted">Dinlenme günü 🌿</p>
+    {% elif day.tasks %}
+      <ul class="week-tasks">
+        {% for task in day.tasks %}
+          <li class="week-task is-{{ task.status }}" style="--task-color: {{ task.color }}">
+            <span class="week-icon" aria-hidden="true">{{ task.icon }}</span>
+            <span class="week-title">{{ task.title }}</span>
+            <span class="muted week-min">{{ task.minutes }} dk{% if task.status == "done" %} ✓{% elif task.status == "skipped" %} (atlandı){% endif %}</span>
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p class="muted">Henüz görev yok.</p>
+    {% endif %}
+  </section>
+{% endfor %}
+
+<a class="btn btn-secondary btn-block" href="{% url 'today' %}">Bugüne dön</a>
+{% endblock %}

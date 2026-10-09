@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import MockExam, MockScore, Plan, PlanTopic, StudentProfile, TopicProgress
+from .models import MockExam, MockScore, Plan, PlanTopic, ReviewItem, StudentProfile, Task, TopicProgress
 
 
 @admin.register(StudentProfile)
@@ -41,4 +41,19 @@ class MockExamAdmin(admin.ModelAdmin):
 class TopicProgressAdmin(admin.ModelAdmin):
     list_display = ("user", "topic", "level", "state", "boost")
     list_filter = ("level", "state")
+    raw_id_fields = ("user", "topic")
+
+
+@admin.register(Task)
+class TaskAdmin(admin.ModelAdmin):
+    list_display = ("date", "user", "kind", "title", "minutes", "status")
+    list_filter = ("kind", "status", "date")
+    search_fields = ("user__email", "title")
+    raw_id_fields = ("user", "plan", "topic", "subject", "session", "review_item")
+
+
+@admin.register(ReviewItem)
+class ReviewItemAdmin(admin.ModelAdmin):
+    list_display = ("user", "topic", "due_date", "interval_index", "is_active")
+    list_filter = ("is_active", "interval_index")
     raw_id_fields = ("user", "topic")
