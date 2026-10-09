@@ -1,0 +1,9 @@
+.env
+.env.local
+__pycache__/
+*.pyc
+staticfiles/
+db.sqlite3
+.venv/
+.vercel/
+.idea/
