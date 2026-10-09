@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+
+{% block title %}Bugün — rotam{% endblock %}
+
+{% block content %}
+<div class="card empty-state">
+  <div class="emoji" aria-hidden="true">🧭</div>
+  <h1>Merhaba {{ user.first_name }}!</h1>
+  <p class="muted">Günlük görevlerin çok yakında burada olacak. Rotanı hazırlıyoruz.</p>
+</div>
+{% endblock %}

@@ -1,0 +1,5 @@
+<div id="toasts" aria-live="polite">
+  {% for message in messages %}
+    <div class="toast {{ message.level_tag }}" role="{% if message.level_tag == 'error' %}alert{% else %}status{% endif %}">{{ message }}</div>
+  {% endfor %}
+</div>

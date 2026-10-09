@@ -1032,14 +1032,14 @@ Her faz kendi içinde çalışır, test edilebilir ve deploy edilebilir bir duru
 
 ### Faz 1 — Tasarım sistemi, karşılama ve üyelik
 
-- [ ] `main.css`: tüm token'lar, açık/koyu tema, temel bileşenler (§9)
-- [ ] `base.html`: üst bar (geri sayım çipi için yer), mobil sekme çubuğu, masaüstü kenar menü, toast alanı
-- [ ] Logo SVG'si (özgün pusula/rota ikonu)
-- [ ] Karşılama sayfası (`/`): hero, "nasıl çalışır" 3 adım, "Hemen başla"
-- [ ] Kayıt (ad, e-posta, parola ×2), giriş (`?next=`), çıkış (POST); Türkçe hatalar
-- [ ] Girişli kullanıcı `/`, `/kayit/`, `/giris/`'e giderse `/bugun/`'e (bu fazda geçici bir "yakında" sayfası) yönlendirilir
-- [ ] `app.js`: CSRF yardımcı fonksiyonu, toast, tema değiştirici
-- [ ] Testler: e-posta büyük/küçük harf duyarsız benzersizlik, kayıt → otomatik giriş, giriş/çıkış, `next` yönlendirmesi
+- [x] `main.css`: tüm token'lar, açık/koyu tema, temel bileşenler (§9)
+- [x] `base.html`: üst bar (geri sayım çipi için yer), mobil sekme çubuğu, masaüstü kenar menü, toast alanı
+- [x] Logo SVG'si (özgün pusula/rota ikonu)
+- [x] Karşılama sayfası (`/`): hero, "nasıl çalışır" 3 adım, "Hemen başla"
+- [x] Kayıt (ad, e-posta, parola ×2), giriş (`?next=`), çıkış (POST); Türkçe hatalar
+- [x] Girişli kullanıcı `/`, `/kayit/`, `/giris/`'e giderse `/bugun/`'e (bu fazda geçici bir "yakında" sayfası) yönlendirilir
+- [x] `app.js`: CSRF yardımcı fonksiyonu, toast, tema değiştirici
+- [x] Testler: e-posta büyük/küçük harf duyarsız benzersizlik, kayıt → otomatik giriş, giriş/çıkış, `next` yönlendirmesi
 
 **Kabul kriterleri:** Kayıt/giriş/çıkış çalışıyor; tasarım 360px mobilde ve masaüstünde §9'a uygun; koyu tema çalışıyor.
 
@@ -1131,7 +1131,7 @@ Her faz kendi içinde çalışır, test edilebilir ve deploy edilebilir bir duru
 > Claude Code her fazın sonunda burayı günceller.
 
 - [x] Faz 0 — İskelet ve ilk deploy (canlı: https://kocluk-projesi.vercel.app)
-- [ ] Faz 1 — Tasarım sistemi, karşılama ve üyelik
+- [x] Faz 1 — Tasarım sistemi, karşılama ve üyelik
 - [ ] Faz 2 — Sınav kataloğu ve konu veritabanı
 - [ ] Faz 3 — Tanışma, plan motoru çekirdeği ve gerçekçilik raporu
 - [ ] Faz 4 — Günlük görevler ve tekrar sistemi
@@ -1144,6 +1144,7 @@ Her faz kendi içinde çalışır, test edilebilir ve deploy edilebilir bir duru
 - Faz 0: Supabase dokümanına göre transaction pooler'da prepared statement kapalı (`prepare_threshold=None`); bağlantı dizesine `?sslmode=require` eklenmesi öneriliyor.
 - Faz 0 tamamlandı: Vercel deploy çalışıyor, canlı admin girişi (`/yonetim/`) ile Supabase okuma/yazma doğrulandı. `CSRF_TRUSTED_ORIGINS=https://kocluk-projesi.vercel.app`.
 - Faz 0: Supabase migration uygulandı, 10 tabloda RLS açık (politikasız; Advisor yalnızca INFO "RLS Enabled No Policy" gösteriyor, bu istenen durum). RLS SQL’inde `format(%I)` Django’nun `%` yer tutucusuyla çakıştığı için `quote_ident` kullanılıyor.
+- Faz 1: Tasarım sistemi `static/css/main.css` içinde (açık/koyu tema: `data-theme` + `prefers-color-scheme`, seçim `localStorage`'da). Kayıt/giriş/çıkış `accounts` uygulamasında; giriş `LoginView` + e-posta ile `EmailAuthenticationForm`, e-posta her yerde küçük harfe çevrilir (`User.save`, `get_by_natural_key` büyük/küçük harf duyarsız). `/bugun/` şimdilik geçici "yakında" sayfası; Plan/Deneme/İlerleme/Profil sekmeleri pasif. Kayıttan sonra şimdilik `/bugun/`'e gidilir, Faz 3'te tanışmaya yönlenecek. Logo `static/img/logo.svg`. Honeypot ve hız sınırı Faz 6'da.
 - Yerel geliştirme Python 3.12 ile (`.venv` 3.12'den yeniden oluşturuldu).
 - YKS 2027 tarihleri tahmini (TYT 19 Haziran, AYT/YDT 20 Haziran 2027). ÖSYM takvimi açıklanınca `data/yks_2027.json` güncellenip `seed_exam_data` yeniden çalıştırılacak.
 

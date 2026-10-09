@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block title %}Kayıt ol — rotam{% endblock %}
+
+{% block guest_content %}
+<div class="auth-wrap">
+  <h1>Rotanı çizmeye başla</h1>
+  <p class="lead">Birkaç bilgi yeter. Sonra kısa bir tanışma ile planını çıkaracağız.</p>
+  <form class="card" method="post" novalidate>
+    {% csrf_token %}
+    {% if form.non_field_errors %}
+      <div class="form-error" role="alert">{% for error in form.non_field_errors %}{{ error }} {% endfor %}</div>
+    {% endif %}
+    {% for field in form %}{% include "partials/field.html" %}{% endfor %}
+    <button type="submit" class="btn btn-block">Hesap oluştur</button>
+  </form>
+  <p class="auth-foot">Zaten hesabın var mı? <a href="{% url 'login' %}">Giriş yap</a></p>
+</div>
+{% endblock %}

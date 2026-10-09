@@ -1,16 +1,59 @@
-{% load static %}<!DOCTYPE html>
-<html lang="tr">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>rotam — yakında</title>
-  <link rel="stylesheet" href="{% static 'css/main.css' %}">
-</head>
-<body>
-  <main>
-    <h1 class="logo">rotam</h1>
-    <p class="slogan">Sınavına giden en kısa rota.</p>
-    <p class="muted">Çok yakında burada.</p>
-  </main>
-</body>
-</html>
+{% extends "base.html" %}
+
+{% block guest_content %}
+<section class="hero">
+  <h1>Sınavına giden en kısa rota.</h1>
+  <p>Kalan süreni, seviyeni ve vaktini söyle; her gün ne çalışacağını biz söyleyelim.</p>
+  <div class="cta">
+    <a class="btn btn-on-hero" href="{% url 'register' %}">Hemen başla</a>
+    <a class="btn btn-outline-hero" href="{% url 'login' %}">Giriş yap</a>
+  </div>
+</section>
+
+<section class="section">
+  <h2>Nasıl çalışır?</h2>
+  <ol class="steps">
+    <li class="card step">
+      <span class="step-num" aria-hidden="true">1</span>
+      <div>
+        <h3>Kendini anlat</h3>
+        <p>Sınavını, günde ne kadar çalışabileceğini ve hangi konuları ne kadar bildiğini söyle. Beş kısa adım.</p>
+      </div>
+    </li>
+    <li class="card step">
+      <span class="step-num" aria-hidden="true">2</span>
+      <div>
+        <h3>Rotanı gör</h3>
+        <p>Vaktin yetiyor mu, yetmiyor mu; dürüstçe söyleriz. Vakit yetmezse en çok net getirecek konulara odaklanırız.</p>
+      </div>
+    </li>
+    <li class="card step">
+      <span class="step-num" aria-hidden="true">3</span>
+      <div>
+        <h3>Her gün bir adım</h3>
+        <p>Bugün ne yapacağını net görürsün. Çalışamadığın gün plan kendini düzeltir, sen yeniden başlarsın.</p>
+      </div>
+    </li>
+  </ol>
+</section>
+
+<section class="section">
+  <h2>Dürüst bir koç</h2>
+  <div class="values">
+    <div class="card value">
+      <h3>Puan sözü yok</h3>
+      <p>Tahminler her zaman aralık olarak ve “tahmini” etiketiyle gösterilir.</p>
+    </div>
+    <div class="card value">
+      <h3>Suçlama yok</h3>
+      <p>Çalışamadığın gün başarısızlık değil; planın yeniden dağıtıldığı bir gündür.</p>
+    </div>
+    <div class="card value">
+      <h3>Kararı sen verirsin</h3>
+      <p>Bir konuyu plandan çıkarmayı yalnızca öneririz. Sen onaylamadan hiçbir şey değişmez.</p>
+    </div>
+  </div>
+</section>
+
+<p class="footnote">Verilerin sadece sana aittir. Başka hiçbir kullanıcı göremez.</p>
+{% endblock %}

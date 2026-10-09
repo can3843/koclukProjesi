@@ -15,6 +15,9 @@ class UserManager(BaseUserManager):
         user.save(using=self._db)
         return user
 
+    def get_by_natural_key(self, email):
+        return self.get(email__iexact=email)
+
     def create_user(self, email, password=None, **extra_fields):
         extra_fields.setdefault("is_staff", False)
         extra_fields.setdefault("is_superuser", False)
@@ -41,6 +44,10 @@ class User(AbstractUser):
         constraints = [
             models.UniqueConstraint(Lower("email"), name="accounts_user_email_ci_unique"),
         ]
+
+    def save(self, *args, **kwargs):
+        self.email = self.email.strip().lower()
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return self.email
