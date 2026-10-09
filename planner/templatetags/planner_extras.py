@@ -35,3 +35,9 @@ def duration_short(minutes):
     if hours and rest:
         return f"{hours} sa {rest} dk"
     return f"{hours} sa" if hours else f"{rest} dk"
+
+
+@register.filter
+def seconds_short(seconds):
+    """Seconds to whole minutes in short form: 4500 -> "1 sa 15 dk"."""
+    return duration_short(int(seconds or 0) // 60)

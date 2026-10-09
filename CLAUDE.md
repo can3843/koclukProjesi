@@ -1109,6 +1109,19 @@ Her faz kendi içinde çalışır, test edilebilir ve deploy edilebilir bir duru
 
 **Kabul kriterleri:** Öğrenci ilerlemesini tek bakışta görebiliyor; ayar değişiklikleri planı tutarlı şekilde yeniliyor; güvenlik kontrolleri temiz.
 
+### Faz 7 — Pomodoro sayacı ve gerçek çalışma süresi
+
+> Faz 0–6 bittikten sonra kullanıcıyla birlikte eklenen faz (§14'teki "Pomodoro sayacı ve gerçek çalışma süresi ölçümü" maddesi). Yeni paket, harici hizmet ve zamanlanmış iş yok.
+
+- [x] `Task.focus_seconds` (görevde gerçekten odaklanılan süre, saniye) + migration; sabitler `planner/engine/config.py` içinde (odak 25 dk, mola 5 dk, 4 odaktan sonra uzun mola 15 dk, tek istekte en fazla 4 saat)
+- [x] `services.add_focus_time(task, seconds, today)`; `POST /gorev/<id>/sure/` (JSON + form yedeği): `400` geçersiz/aşırı süre, `404` görev yok veya başkasına ait, `409` gelecekteki ya da kaçırılmış/atlanmış görev
+- [x] `/bugun/`: bekleyen görev kartında "⏱ Odaklan" düğmesi; altta sabit sayaç paneli (odak/mola, duraklat/devam, bitir, molayı atla); durum `localStorage`'da, süre sunucuya duraklatma, faz sonu, bitirme, sayfa kapanışı ve düzenli aralıklarla gönderilir; JS kapalıysa düğme görünmez, uygulama eskisi gibi çalışır
+- [x] Odak süresi görev kartında, günün özetinde, `/ilerleme/` özet kutusunda (bu hafta + toplam), haftalık tabloda ve haftalık değerlendirmede görünür
+- [x] Plan motoru ve tempo hesabı değişmez (tempo yine yapılan görev dakikasına dayanır); odak süresi yalnızca ölçüm ve motivasyon içindir
+- [x] Testler: süre ekleme (toplama, sınırlar, sahiplik, gelecek/kaçırılmış görev), `/bugun/` sorgu sayısının değişmemesi, ilerleme ve haftalık değerlendirmede görünmesi
+
+**Kabul kriterleri:** Öğrenci bir görevde sayacı başlatıp, sayfayı yenileyip, görevi bitirip süresini hem günün hem haftanın özetinde görebiliyor; başkasının görevine süre eklenemiyor.
+
 ---
 
 ## 14. Kapsam dışı (ileride)
@@ -1119,7 +1132,6 @@ Her faz kendi içinde çalışır, test edilebilir ve deploy edilebilir bir duru
 - E-posta/push bildirimleri ve hatırlatmalar
 - Yapay zeka ile kişiselleştirilmiş haftalık değerlendirme metinleri
 - Konu bazlı soru bankası, video/kaynak önerileri
-- Pomodoro sayacı ve gerçek çalışma süresi ölçümü
 - Puan ve sıralama tahmini (katsayılar her yıl değiştiği için bilinçli olarak yok)
 - Veli/koç paneli
 - Mobil uygulama
@@ -1137,6 +1149,7 @@ Her faz kendi içinde çalışır, test edilebilir ve deploy edilebilir bir duru
 - [x] Faz 4 — Günlük görevler ve tekrar sistemi (Supabase'e migration uygulandı)
 - [x] Faz 5 — Denemeler, uyarlama ve haftalık değerlendirme (Supabase'e migration uygulandı)
 - [x] Faz 6 — İlerleme paneli, ayarlar ve sağlamlaştırma (Supabase'e migration uygulandı)
+- [x] Faz 7 — Pomodoro sayacı ve gerçek çalışma süresi (Supabase'e `planner.0004` uygulandı)
 
 **Notlar / alınan kararlar:**
 - Faz 0: Django projesi `config`, uygulamalar `accounts`, `catalog`, `planner`, `core`. Özel `User` modeli ilk migration'da. RLS migration'ı (`core/migrations/0001_enable_rls.py`, `core/rls.py`) yalnızca PostgreSQL'de çalışır (SQLite'ta atlanır); yeni tablo ekleyen her fazda `core.rls.enable_rls` çağıran yeni bir migration eklenecek. `USERNAME_FIELD` kontrolü için `email` alanı `unique=True`, büyük/küçük harf duyarsızlığı `UniqueConstraint(Lower("email"))` ile.
@@ -1153,6 +1166,7 @@ Her faz kendi içinde çalışır, test edilebilir ve deploy edilebilir bir duru
 - Faz 6: **İlerleme** `/ilerleme/` (`planner/views/progress.py`, geometri `planner/charts.py`, saf Python): özet kutuları (seri, bu hafta, toplam saat, çözülen soru/doğruluk), "Bu gidişle sınav günü" aralığı (sayfa açılırken `make_plan` ile taze hesaplanır, tempo ve deneme kalibrasyonu dahil; yalnızca aralık + "tahmini" + uyarı metni), haftalık çalışma saati çubuk grafiği (son 8 hafta, yapılan/planlanan), deneme net çizgi grafiği (`?oturum=TYT&ders=<id|toplam>`, hedef çizgisi toplamda), konu haritası (kutucuk durumu renk + simge ile: ✓ öğrenildi, ◐ devam, ★ zaten iyi, ○ sırada, – plan dışı). Grafikler elle SVG; her birinin "Tablo olarak gör" tablosu, `<title>` ipuçları ve gösterge var. Seri renkleri `--chart-1..3` (indigo/mercan/camgöbeği) palet doğrulayıcıyla iki tema için denendi (koyu temada daha koyu tonlar). Türkçe yerelleştirme SVG/CSS sayılarını "12,5" yaptığı için grafik bölümleri `{% localize off %}` içinde ve testle korunuyor.
 - Faz 6: **Ayarlar** `/ayarlar/` (vakit + verimli saat + dinlenme günü tek formda, tema seçimi Cihaza göre/Açık/Koyu `localStorage`'da, alan değişikliği onay kutulu), `/ayarlar/seviyeler/` (öğrenilmiş konular değişmez), `/ayarlar/konular/` ve yol haritasında "Bu konuyu yine de ekle" (`user_override`; `POST /ayarlar/konu/<id>/`, `next` yalnızca aynı site yollarına). Plan nedenleri: vakit/dinlenme günü/alan/konu ekle-çıkar → `settings_change`, seviyeler → `levels_changed`. Vakit ve dinlenme günü değişmediyse (yalnızca verimli saat) plan yeniden kurulmaz. Alan değişince ortak konulardaki ilerleme korunur, bekleyen görevler yeniden üretilir. Hesap silme `/ayarlar/hesap-sil/` (parola onaylı, tanışmayı bitirmemiş kullanıcıya da açık, silme sonrası çıkış; tüm veri cascade ile silinir).
 - Faz 6: **Sağlamlaştırma:** hız sınırı `accounts/ratelimit.py` (kayan pencere, `DatabaseCache` tablosu `rotam_cache`; tablo `core/migrations/0006` ile `migrate` sırasında oluşur, ayrıca `createcachetable` gerekmez); giriş 15 dk'da 10 başarısız, kayıt saatte 10 deneme, hesap silme parolası aynı sınırı kullanır; engellenince 429 ve kimlik bilgisi hiç denenmez. Kayıt honeypot alanı `website`. `check --deploy` temiz (prod ayarlarıyla: `SECURE_SSL_REDIRECT`, HSTS 1 yıl + alt alan adları + preload, hepsi yalnızca `DEBUG=False`). `/bugun/` sorgu sayısı görev/konu sayısından bağımsız (kararlı durumda 18, günün ilk ziyaretinde 47; testle korunuyor); `build_engine_input` içindeki ders başına `test` sorgusu `select_related` ile giderildi. RLS: `core/rls.py` artık her tabloya "herkese kapalı" politika (`rotam_deny_all`, `FOR ALL TO PUBLIC USING (false)`) da ekliyor; Security Advisor'daki 28 "RLS Enabled No Policy" INFO bildirimi (başka uyarı yok) bu migration ile kapandı: Supabase'de 29 tablonun hepsinde RLS + politika var, Security Advisor boş. `core/migrations/0007` önbellek tablosu için RLS'yi tekrarlar.
+- Faz 7: **Pomodoro ve gerçek süre.** `Task.focus_seconds` (migration `planner/0004`, yeni tablo olmadığı için RLS migration'ı gerekmedi). Sabitler `config.py`'de (25/5/15 dk, 4 turda bir uzun mola, istek başına en fazla 4 saat). `services.add_focus_time` + `POST /gorev/<id>/sure/` (400 geçersiz, 404 başkasının görevi, 409 gelecek/atlanmış/kaçırılmış görev; yapılmış göreve son saniyeler eklenebilir). Sayaç `static/js/timer.js`: bir kerede tek görev, panel `/bugun/` altında sabit, durum `localStorage` (`rotam-timer`); süre duraklatma, faz sonu, bitirme, sayfa kapanışı (`keepalive`) ve 2 dakikada bir sunucuya gönderilir; sayfa yenilenince sayaç **duraklamış** geri gelir (kapalıyken geçen süre sayılmaz), cihaz uyursa (>2 dk boşluk) sayaç duraklar. Odak bitince mola kendiliğinden başlar, mola bitince yeni odak öğrencinin onayını bekler. Görev tamamlanır/atlanırsa sayaç kendiliğinden kapanır (`app.js` → `rotam.timer.taskChanged`). Odak süresi görev kartında, günün özetinde, `/ilerleme/` kutusunda (bu hafta + toplam), haftalık tabloda ve haftalık değerlendirmede (`stats.focus_minutes`) görünür. Plan motoru ve tempo hesabı odak süresini **kullanmaz** (testle sabitlendi). JS kapalıysa "Odaklan" düğmeleri görünmez.
 - Yerel geliştirme Python 3.12 ile (`.venv` 3.12'den yeniden oluşturuldu).
 - YKS 2027 tarihleri tahmini (TYT 19 Haziran, AYT/YDT 20 Haziran 2027). ÖSYM takvimi açıklanınca `data/yks_2027.json` güncellenip `seed_exam_data` yeniden çalıştırılacak.
 

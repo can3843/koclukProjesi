@@ -865,6 +865,40 @@ button.check:hover { border-color: var(--primary); }
 .dropped-add .btn-mini { min-height: 36px; padding: 0 12px; font-size: 0.85rem; }
 html:not(.js) [data-theme-choices] { display: none; }
 
+/* ---------- Phase 7: Pomodoro timer ---------- */
+
+.focus-btn {
+  display: none; align-items: center; min-height: 44px; margin-top: 4px; padding: 0 14px;
+  border: 2px solid var(--border); border-radius: var(--radius-pill); background: transparent;
+  color: var(--primary); font: inherit; font-size: 0.9rem; font-weight: 800; cursor: pointer;
+}
+.focus-btn:hover { background: var(--primary-soft); border-color: var(--primary); }
+html.js .focus-btn { display: inline-flex; }
+
+.timer-panel {
+  position: fixed; z-index: 30;
+  left: 12px; right: 12px; bottom: calc(var(--tabbar-h) + 12px);
+  max-width: 420px; margin: 0 auto; padding: 16px 18px;
+  border: 2px solid var(--primary); border-radius: var(--radius-lg);
+  background: var(--surface); box-shadow: var(--shadow);
+}
+.timer-panel[hidden] { display: none; }
+.timer-panel.is-break { border-color: var(--success); }
+.timer-head { display: flex; align-items: baseline; gap: 10px; min-width: 0; }
+.timer-phase { font-weight: 800; color: var(--primary); white-space: nowrap; }
+.timer-panel.is-break .timer-phase { color: var(--success); }
+.timer-task { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text-muted); font-size: 0.9rem; }
+.timer-clock { margin: 4px 0; font-size: 3rem; font-weight: 800; line-height: 1.1; text-align: center; letter-spacing: 0.02em; }
+.timer-cycle { margin: 0 0 10px; text-align: center; font-size: 0.85rem; color: var(--text-muted); }
+.timer-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
+.timer-actions [hidden] { display: none; }
+body.has-timer .main-col { padding-bottom: calc(var(--tabbar-h) + 280px); }
+
+@media (min-width: 900px) {
+  .timer-panel { left: auto; right: 24px; bottom: 24px; width: 340px; margin: 0; }
+  body.has-timer .main-col { padding-bottom: 24px; }
+}
+
 @media (min-width: 560px) {
   .stat-grid { grid-template-columns: repeat(4, 1fr); }
   .topic-manage { flex-direction: row; align-items: center; justify-content: space-between; }

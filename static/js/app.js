@@ -210,6 +210,7 @@
           holder.innerHTML = body.html.trim();
           var fresh = holder.firstElementChild;
           card.replaceWith(fresh);
+          if (body.task.status !== "pending" && rotam.timer) rotam.timer.taskChanged(body.task.id);
           if (body.task.status === "done") fresh.classList.add("just-done");
           updateSummary(body.day, body.streak);
           rotam.toast(body.message, "success");

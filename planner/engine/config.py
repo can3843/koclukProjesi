@@ -62,3 +62,11 @@ PACE_MIN_PLANNED_DAYS = 3          # days with planned tasks needed before pace 
 RESCOPE_SNOOZE_DAYS = 7            # "not now" hides the scope suggestion for this many days
 IMPROVEMENT_MIN_ANSWERED = 10      # answered questions needed in both weeks to report an improvement
 FOCUS_SUBJECT_COUNT = 3            # next week's focus subjects in the weekly review
+
+# ---- Added for Phase 7 (Pomodoro timer and real study time; used by the UI, not by the plan engine) ----
+POMODORO_FOCUS_MIN = 25
+POMODORO_BREAK_MIN = 5
+POMODORO_LONG_BREAK_MIN = 15
+POMODOROS_BEFORE_LONG_BREAK = 4
+MAX_FOCUS_SECONDS_PER_REQUEST = 4 * 60 * 60   # one request can add at most this much focus time
+FOCUS_FLUSH_SECONDS = 120                     # the running timer sends its unsaved time at least this often

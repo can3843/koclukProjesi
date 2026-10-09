@@ -10,7 +10,7 @@
 <section class="stat-grid" aria-label="Özet">
   <div class="card stat"><span class="stat-value">🔥 {{ streak }}</span><span class="stat-label">günlük seri</span></div>
   <div class="card stat"><span class="stat-value">{{ stats.week_minutes|duration_short }}</span><span class="stat-label">bu hafta</span></div>
-  <div class="card stat"><span class="stat-value">{{ stats.total_hours }} sa</span><span class="stat-label">toplam çalışma</span></div>
+  <div class="card stat"><span class="stat-value">⏱ {{ stats.focus_week|seconds_short }}</span><span class="stat-label">bu hafta odak · toplam {{ stats.focus_total|seconds_short }}</span></div>
   <div class="card stat">
     <span class="stat-value">{{ stats.solved }}</span>
     <span class="stat-label">çözülen soru{% if stats.accuracy is not None %} · %{{ stats.accuracy }} doğru{% endif %}</span>
@@ -72,10 +72,10 @@
     <details class="table-view">
       <summary>Tablo olarak gör</summary>
       <table>
-        <thead><tr><th>Hafta</th><th>Yapılan</th><th>Planlanan</th></tr></thead>
+        <thead><tr><th>Hafta</th><th>Yapılan</th><th>Planlanan</th><th>Odak</th></tr></thead>
         <tbody>
           {% for row in weekly.rows %}
-            <tr><td>{{ row.week|date:"j F" }}</td><td>{{ row.done_minutes|duration_tr }}</td><td>{{ row.planned_minutes|duration_tr }}</td></tr>
+            <tr><td>{{ row.week|date:"j F" }}</td><td>{{ row.done_minutes|duration_tr }}</td><td>{{ row.planned_minutes|duration_tr }}</td><td>{{ row.focus_seconds|seconds_short }}</td></tr>
           {% endfor %}
         </tbody>
       </table>

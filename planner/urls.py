@@ -11,6 +11,7 @@ urlpatterns = [
     path("gorev/<int:pk>/tamamla/", today.task_action, {"action": "complete"}, name="task_complete"),
     path("gorev/<int:pk>/atla/", today.task_action, {"action": "skip"}, name="task_skip"),
     path("gorev/<int:pk>/geri-al/", today.task_action, {"action": "undo"}, name="task_undo"),
+    path("gorev/<int:pk>/sure/", today.task_focus, name="task_focus"),
     path("deneme/", mocks.mock_list, name="mock_list"),
     path("deneme/ekle/", mocks.mock_add, name="mock_add"),
     path("deneme/<int:pk>/", mocks.mock_detail, name="mock_detail"),

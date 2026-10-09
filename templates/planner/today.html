@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load static planner_extras %}
 
 {% block title %}Bugün — rotam{% endblock %}
 
@@ -20,6 +21,7 @@
   <div class="day-summary-text">
     <p class="day-count"><strong data-done-count>{{ summary.done_count }}</strong> / <span data-total-count>{{ summary.total_count }}</span> görev</p>
     <p class="muted"><span data-done-minutes>{{ summary.done_minutes }}</span> / <span data-planned-minutes>{{ summary.planned_minutes }}</span> dk</p>
+    <p class="muted">⏱ <span data-focus-total>{{ summary.focus_seconds|seconds_short }}</span> odak</p>
     <p class="streak" title="Üst üste çalıştığın gün sayısı">🔥 <strong data-streak>{{ streak }}</strong> gün seri</p>
   </div>
 </section>
@@ -55,5 +57,25 @@
 {% endif %}
 
 <p class="auth-foot"><a href="{% url 'week' %}">Önümüzdeki 7 güne bak →</a></p>
+
+{% if tasks and not is_rest and not exam_over %}
+<section class="timer-panel" data-timer hidden aria-label="Odak sayacı"
+         data-focus="{{ timer.focus }}" data-break="{{ timer.break }}" data-long-break="{{ timer.long_break }}"
+         data-cycles="{{ timer.cycles }}" data-flush="{{ timer.flush }}" data-url-template="{% url 'task_focus' 0 %}">
+  <div class="timer-head">
+    <span class="timer-phase" data-timer-phase>Odak</span>
+    <span class="timer-task" data-timer-task></span>
+  </div>
+  <div class="timer-clock" data-timer-clock role="timer" aria-live="off">25:00</div>
+  <p class="timer-cycle" data-timer-cycle></p>
+  <div class="timer-actions">
+    <button type="button" class="btn btn-small" data-timer-toggle>Başlat</button>
+    <button type="button" class="btn btn-small btn-secondary" data-timer-skip hidden>Molayı atla</button>
+    <button type="button" class="btn btn-small btn-secondary" data-timer-finish>Bitir</button>
+  </div>
+</section>
+{% endif %}
 {% endblock %}
+
+{% block scripts %}<script src="{% static 'js/timer.js' %}" defer></script>{% endblock %}
 

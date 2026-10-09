@@ -1,4 +1,4 @@
-<article class="task-card is-{{ task.status }}" id="task-{{ task.pk }}" data-task data-task-id="{{ task.pk }}" data-kind="{{ task.kind }}" style="--task-color: {{ task.color }}">
+{% load planner_extras %}<article class="task-card is-{{ task.status }}" id="task-{{ task.pk }}" data-task data-task-id="{{ task.pk }}" data-kind="{{ task.kind }}" style="--task-color: {{ task.color }}">
   <form method="post" action="{% if task.status == 'pending' %}{% url 'task_complete' task.pk %}{% else %}{% url 'task_undo' task.pk %}{% endif %}" class="task-main" data-task-form>
     {% csrf_token %}
     {% if task.status == "pending" %}
@@ -14,7 +14,9 @@
         {{ task.minutes }} dk{% if task.peak_label %} · <span class="peak-label">{{ task.peak_label }}</span>{% endif %}
         {% if task.status == "done" and task.correct is not None %} · <strong>{{ task.correct }}D {{ task.wrong }}Y {{ task.blank }}B</strong>{% endif %}
         {% if task.status == "skipped" %} · atlandı{% endif %}
+        <span data-focus-label>{% if task.focus_seconds >= 60 %} · ⏱ {{ task.focus_seconds|seconds_short }}{% endif %}</span>
       </p>
+      {% if task.can_focus %}<button type="button" class="focus-btn" data-focus-start data-title="{{ task.title }}">⏱ Odaklan</button>{% endif %}
       {% if task.note %}<p class="task-note">{{ task.note }}</p>{% endif %}
       {% if task.kind == "mock" and task.status == "done" and not task.mock_linked and task.session %}
         <p class="task-note"><a href="{% url 'mock_add' %}?oturum={{ task.session.code }}&amp;gorev={{ task.pk }}">Deneme sonucunu gir →</a></p>

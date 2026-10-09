@@ -207,6 +207,7 @@ class Task(models.Model):
     blank = models.PositiveSmallIntegerField(null=True, blank=True)
     completed_at = models.DateTimeField(null=True, blank=True)
     review_item = models.ForeignKey(ReviewItem, null=True, blank=True, on_delete=models.SET_NULL, related_name="tasks")
+    focus_seconds = models.PositiveIntegerField(default=0)  # real time spent with the Pomodoro timer on this task
     meta = models.JSONField(default=dict, blank=True)  # undo information, written when a task is completed
 
     class Meta:

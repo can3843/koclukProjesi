@@ -5,7 +5,7 @@ from dataclasses import asdict
 from datetime import date as date_cls, timedelta
 
 from django.db import transaction
-from django.db.models import F
+from django.db.models import F, Sum
 from django.db.models.functions import Greatest
 from django.utils import timezone
 
@@ -575,6 +575,7 @@ def create_weekly_review(user, today):
     stats = {
         "planned_minutes": planned, "done_minutes": done, "percent": percent,
         "task_count": len(tasks), "done_count": sum(1 for t in tasks if t.status == Task.Status.DONE),
+        "focus_minutes": sum(t.focus_seconds for t in tasks) // 60,
         "answered": answered, "correct": correct,
         "accuracy": round(100 * correct / answered) if answered else None,
         "streak": streak, "mock_changes": _mock_changes(user, week_start, this_monday),
@@ -897,6 +898,32 @@ def complete_task(task, correct=None, wrong=None, blank=None, today=None):
     if refresh:
         regenerate_future(task.user, today)
     return refresh
+
+
+def add_focus_time(task, seconds, today=None):
+    """Add real study time (from the Pomodoro timer) to a task of today or an earlier day that is still open or done."""
+    today = today or timezone.localdate()
+    try:
+        seconds = int(seconds)
+    except (TypeError, ValueError):
+        raise TaskError("Süre tam sayı (saniye) olmalı.", 400)
+    if not 1 <= seconds <= config.MAX_FOCUS_SECONDS_PER_REQUEST:
+        raise TaskError("Süre geçerli bir aralıkta olmalı.", 400)
+    if task.date > today:
+        raise TaskError("Gelecekteki bir görev için süre tutulamaz.", 409)
+    if task.status not in (Task.Status.PENDING, Task.Status.DONE):
+        raise TaskError("Bu görev için süre tutulamaz.", 409)
+    updated = Task.objects.filter(pk=task.pk, status__in=(Task.Status.PENDING, Task.Status.DONE)).update(
+        focus_seconds=F("focus_seconds") + seconds)
+    if not updated:
+        raise TaskError("Bu görev için süre tutulamaz.", 409)
+    return Task.objects.values_list("focus_seconds", flat=True).get(pk=task.pk)
+
+
+def focus_seconds_between(user, first_day, last_day):
+    """Total real study seconds of a user's tasks between two dates (inclusive)."""
+    return Task.objects.filter(user=user, date__gte=first_day, date__lte=last_day).aggregate(
+        total=Sum("focus_seconds"))["total"] or 0
 
 
 @transaction.atomic

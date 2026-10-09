@@ -11,7 +11,9 @@ from catalog.models import ExamSession, Subject
 from planner import charts
 from planner.engine import make_plan
 from planner.models import MockExam, Task, TopicProgress
-from planner.services import build_engine_input, current_streak, exam_countdown, get_active_plan, track_topics
+from planner.services import (
+    build_engine_input, current_streak, exam_countdown, focus_seconds_between, get_active_plan, track_topics,
+)
 
 from .plan import DISCLAIMER
 
@@ -123,10 +125,12 @@ def weekly_hours(user, today):
     """Study hours of the last weeks (Monday to Sunday); the current week is still running."""
     this_monday = today - timedelta(days=today.weekday())
     first = this_monday - timedelta(weeks=WEEKS_SHOWN - 1)
-    done, planned = defaultdict(int), defaultdict(int)
-    for day, status, minutes in Task.objects.filter(user=user, date__gte=first, date__lte=today).values_list("date", "status", "minutes"):
+    done, planned, focus = defaultdict(int), defaultdict(int), defaultdict(int)
+    rows = Task.objects.filter(user=user, date__gte=first, date__lte=today).values_list("date", "status", "minutes", "focus_seconds")
+    for day, status, minutes, focus_seconds in rows:
         week = day - timedelta(days=day.weekday())
         planned[week] += minutes
+        focus[week] += focus_seconds
         if status == Task.Status.DONE:
             done[week] += minutes
     bars, total_done = [], 0
@@ -141,7 +145,7 @@ def weekly_hours(user, today):
                 f"{date_format(week, 'j F')} haftası: {charts.fmt(done[week] / 60, 1)} sa yapıldı, "
                 f"{charts.fmt(planned[week] / 60, 1)} sa planlandı"
             ),
-            "done_minutes": done[week], "planned_minutes": planned[week], "week": week,
+            "done_minutes": done[week], "planned_minutes": planned[week], "focus_seconds": focus[week], "week": week,
         })
     return {"chart": charts.bar_chart(bars), "rows": bars, "has_data": total_done > 0 or any(b["planned"] for b in bars)}
 
@@ -176,11 +180,15 @@ def progress_view(request):
     solved = questions["solved"] or 0
     week_start = today - timedelta(days=today.weekday())
     week_minutes = Task.objects.filter(user=user, status=Task.Status.DONE, date__gte=week_start, date__lte=today).aggregate(total=Sum("minutes"))["total"] or 0
+    focus = Task.objects.filter(user=user).aggregate(total=Sum("focus_seconds"))["total"] or 0
+    week_focus = focus_seconds_between(user, week_start, today)
 
     return render(request, "planner/progress.html", {
         "streak": current_streak(user, today),
         "stats": {
             "total_hours": round(done_minutes / 60, 1),
+            "focus_total": focus,
+            "focus_week": week_focus,
             "week_minutes": week_minutes,
             "solved": solved,
             "accuracy": round(100 * (questions["correct"] or 0) / solved) if solved else None,

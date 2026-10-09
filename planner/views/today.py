@@ -10,12 +10,13 @@ from django.views.decorators.http import require_POST
 
 from django.urls import reverse
 
+from planner.engine import config
 from planner.engine.adaptation import pace_is_low
 from planner.engine.phases import PHASE_BY_CODE
 from planner.models import MockExam, StudentProfile, Task
 from planner.services import (
-    TaskError, active_rescope_ids, complete_task, compute_pace, current_streak, day_summary, ensure_daily_state,
-    exam_countdown, skip_task, undo_task, unseen_review,
+    TaskError, active_rescope_ids, add_focus_time, complete_task, compute_pace, current_streak, day_summary, ensure_daily_state,
+    exam_countdown, focus_seconds_between, skip_task, undo_task, unseen_review,
 )
 
 MAX_INFO_CARDS = 2
@@ -52,6 +53,7 @@ def greeting(now):
 def decorate(tasks, profile):
     """Attach display helpers (color, icon, peak label) to tasks."""
     label = PEAK_LABELS.get(profile.peak_time, "") if profile else ""
+    today = timezone.localdate()
     mock_ids = [t.pk for t in tasks if t.kind == Task.Kind.MOCK]
     linked = set(MockExam.objects.filter(task_id__in=mock_ids).values_list("task_id", flat=True)) if mock_ids else set()
     for task in tasks:
@@ -60,6 +62,7 @@ def decorate(tasks, profile):
         task.icon = KIND_ICONS.get(task.kind, "•")
         task.peak_label = label if task.is_peak and task.kind == Task.Kind.LEARN else ""
         task.takes_counts = task.kind in (Task.Kind.PRACTICE, Task.Kind.REVIEW)
+        task.can_focus = task.status == Task.Status.PENDING and task.date <= today
     return tasks
 
 
@@ -125,6 +128,7 @@ def today_view(request):
         profile,
     )
     summary = day_summary(request.user, today)
+    summary["focus_seconds"] = sum(t.focus_seconds for t in tasks)  # not part of the JSON contract of the task endpoints
     shown = [t for t in tasks if t.status != Task.Status.MISSED]
     is_rest = profile.rest_weekday is not None and profile.rest_weekday == today.weekday()
     word, emoji = greeting(timezone.localtime())
@@ -144,6 +148,7 @@ def today_view(request):
         "exam_over": exam_over,
         "prep": PREP_ITEMS if countdown and 0 < countdown["days"] <= 7 else None,
         "countdown": countdown,
+        "timer": timer_settings(),
     })
 
 
@@ -229,3 +234,35 @@ def task_action(request, pk, action):
         "message": message,
         "html": render_to_string("partials/task_card.html", {"task": decorate([task], profile)[0]}, request=request),
     })
+
+
+@login_required
+@require_POST
+def task_focus(request, pk):
+    """Add real study time (seconds from the Pomodoro timer) to a task; JSON for the timer, a redirect for forms."""
+    task = get_object_or_404(Task, pk=pk, user=request.user)  # somebody else's task is a 404
+    try:
+        total = add_focus_time(task, request.POST.get("seconds"), timezone.localdate())
+    except TaskError as error:
+        if _wants_json(request):
+            return JsonResponse({"ok": False, "error": str(error)}, status=error.status)
+        messages.error(request, str(error))
+        return redirect("today")
+    if not _wants_json(request):
+        return redirect("today")
+    return JsonResponse({
+        "ok": True,
+        "task": {"id": task.pk, "focus_seconds": total},
+        "day": {**day_summary(request.user, task.date), "focus_seconds": focus_seconds_between(request.user, task.date, task.date)},
+    })
+
+
+def timer_settings():
+    """Pomodoro lengths for the timer panel (data attributes)."""
+    return {
+        "focus": config.POMODORO_FOCUS_MIN * 60,
+        "break": config.POMODORO_BREAK_MIN * 60,
+        "long_break": config.POMODORO_LONG_BREAK_MIN * 60,
+        "cycles": config.POMODOROS_BEFORE_LONG_BREAK,
+        "flush": config.FOCUS_FLUSH_SECONDS,
+    }
