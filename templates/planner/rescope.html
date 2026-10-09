@@ -23,7 +23,7 @@
   </form>
 {% else %}
   <div class="card empty-state">
-    <div class="emoji" aria-hidden="true">👍</div>
+    <div class="empty-icon">{% include "partials/icon.html" with name="check-circle" %}</div>
     <p class="muted">Şu an kapsamı daraltmaya gerek yok. Planın tempona uygun görünüyor.</p>
   </div>
   <a class="btn btn-block" href="{% url 'today' %}">Bugüne dön</a>

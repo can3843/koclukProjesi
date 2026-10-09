@@ -1,0 +1,6 @@
+{% extends "base.html" %}
+
+{% block title %}Sayfa bulunamadı — rotam{% endblock %}
+
+{% block content %}{% include "partials/error_body.html" with code="404" title="Bu rota haritada yok" text="Aradığın sayfa taşınmış ya da hiç var olmamış olabilir. Ana yola dönelim." %}{% endblock %}
+{% block guest_content %}{% include "partials/error_body.html" with code="404" title="Bu rota haritada yok" text="Aradığın sayfa taşınmış ya da hiç var olmamış olabilir. Ana yola dönelim." %}{% endblock %}

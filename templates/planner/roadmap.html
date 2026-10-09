@@ -39,7 +39,7 @@
     </div>
   {% empty %}
     <div class="card empty-state">
-      <div class="emoji" aria-hidden="true">🧘</div>
+      <div class="empty-icon">{% include "partials/icon.html" with name="leaf" %}</div>
       <p class="muted">Bu dönemde yeni konuya başlamıyoruz; soru çözme ve tekrar ağırlıkta.</p>
     </div>
   {% endfor %}

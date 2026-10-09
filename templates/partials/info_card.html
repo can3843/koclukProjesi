@@ -1,5 +1,5 @@
 <div class="info-card info-{{ card.kind }}" role="note">
-  <span class="info-icon" aria-hidden="true">{{ card.icon }}</span>
+  <span class="info-icon">{% include "partials/icon.html" with name=card.icon %}</span>
   <div>
     <p>{{ card.text }}</p>
     {% if card.link %}<a class="info-link" href="{{ card.link }}">{{ card.link_text }}</a>{% endif %}

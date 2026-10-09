@@ -1,0 +1,26 @@
+{
+  "name": "rotam",
+  "short_name": "rotam",
+  "icons": [
+    {
+      "src": "/static/img/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/static/img/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "/static/img/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "theme_color": "#F7F6FB",
+  "background_color": "#5A55D8",
+  "display": "standalone",
+  "start_url": "/bugun/"
+}

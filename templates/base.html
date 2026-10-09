@@ -6,17 +6,30 @@
   <title>{% block title %}rotam — Sınavına giden en kısa rota{% endblock %}</title>
   <meta name="description" content="Rotam, sınavına kalan süreye, seviyene ve günlük vaktine göre her gün ne çalışacağını söyleyen kişisel dijital koçun.">
   <meta name="color-scheme" content="light dark">
-  <link rel="icon" href="{% static 'img/logo.svg' %}" type="image/svg+xml">
+  <meta name="theme-color" content="#F7F6FB" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#16151F" media="(prefers-color-scheme: dark)">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="rotam">
+  <meta property="og:title" content="rotam — Sınavına giden en kısa rota">
+  <meta property="og:description" content="Kalan süreni, seviyeni ve vaktini söyle; her gün ne çalışacağını biz söyleyelim.">
+  <meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{% static 'img/og.png' %}">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="icon" href="{% static 'img/favicon.ico' %}" sizes="32x32">
+  <link rel="icon" href="{% static 'img/favicon.svg' %}" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="{% static 'img/apple-touch-icon.png' %}">
+  <link rel="manifest" href="{% static 'img/site.webmanifest' %}">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <script>
     /* Apply the saved theme before first paint to avoid a flash. */
     try { var t = localStorage.getItem("rotam-theme"); if (t) document.documentElement.setAttribute("data-theme", t); } catch (e) {}
   </script>
-  <link rel="stylesheet" href="{% static 'css/main.css' %}">
+  <link rel="stylesheet" href="{% static 'css/tokens.css' %}?v={{ asset_v }}">
+  <link rel="stylesheet" href="{% static 'css/main.css' %}?v={{ asset_v }}">
 </head>
 <body class="{% if user.is_authenticated and not onboarding_mode %}authed{% else %}guest{% endif %}">
+{% include "partials/icons.html" %}
 {% if user.is_authenticated and not onboarding_mode %}
   <div class="app">
     <aside class="sidebar">
@@ -24,20 +37,22 @@
       {% include "partials/nav.html" with nav_class="sidebar-nav" %}
     </aside>
     <div class="main-col">
-      <header class="topbar">
-        <a class="brand" href="{% url 'today' %}"><img src="{% static 'img/logo.svg' %}" alt=""><span class="brand-text">rotam</span></a>
-        {% if exam_countdown %}
-          <span class="chip">Sınava {{ exam_countdown.days }} gün</span>{% if exam_countdown.estimated %}<span class="badge" title="Sınav tarihi henüz resmî olarak açıklanmadı">tahmini</span>{% endif %}
-        {% endif %}
-        <span class="spacer"></span>
-        {% include "partials/theme_toggle.html" %}
-        <form method="post" action="{% url 'logout' %}">
-          {% csrf_token %}
-          <button type="submit" class="icon-btn" aria-label="Çıkış yap" title="Çıkış yap">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>
-          </button>
-        </form>
-      </header>
+      <div class="topbar-wrap" data-topbar>
+        <header class="topbar">
+          <a class="brand" href="{% url 'today' %}"><img src="{% static 'img/logo.svg' %}" alt=""><span class="brand-text">rotam</span></a>
+          {% if exam_countdown %}
+            <span class="chip">Sınava {{ exam_countdown.days }} gün</span>{% if exam_countdown.estimated %}<span class="badge" title="Sınav tarihi henüz resmî olarak açıklanmadı">tahmini</span>{% endif %}
+          {% endif %}
+          <span class="spacer"></span>
+          {% include "partials/theme_toggle.html" %}
+          <form method="post" action="{% url 'logout' %}">
+            {% csrf_token %}
+            <button type="submit" class="icon-btn" aria-label="Çıkış yap" title="Çıkış yap">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>
+            </button>
+          </form>
+        </header>
+      </div>
       <main class="content">
         {% block content %}{% endblock %}
       </main>
@@ -45,26 +60,28 @@
   </div>
   {% include "partials/nav.html" with nav_class="tabbar" %}
 {% else %}
-  <header class="site-header">
-    <a class="brand" href="{% url 'home' %}"><img src="{% static 'img/logo.svg' %}" alt="">rotam</a>
-    <div class="actions">
-      {% include "partials/theme_toggle.html" %}
-      {% if user.is_authenticated %}
-        <form method="post" action="{% url 'logout' %}">
-          {% csrf_token %}
-          <button type="submit" class="btn btn-secondary">Çıkış yap</button>
-        </form>
-      {% else %}
-        <a class="btn btn-secondary" href="{% url 'login' %}">Giriş yap</a>
-      {% endif %}
-    </div>
-  </header>
+  <div class="topbar-wrap" data-topbar>
+    <header class="site-header">
+      <a class="brand" href="{% url 'home' %}"><img src="{% static 'img/logo.svg' %}" alt="">rotam</a>
+      <div class="actions">
+        {% include "partials/theme_toggle.html" %}
+        {% if user.is_authenticated %}
+          <form method="post" action="{% url 'logout' %}">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-secondary">Çıkış yap</button>
+          </form>
+        {% else %}
+          <a class="btn btn-secondary" href="{% url 'login' %}">Giriş yap</a>
+        {% endif %}
+      </div>
+    </header>
+  </div>
   <main class="guest-main">
     {% block guest_content %}{% endblock %}
   </main>
 {% endif %}
   {% include "partials/messages.html" %}
-  <script src="{% static 'js/app.js' %}" defer></script>
+  <script src="{% static 'js/app.js' %}?v={{ asset_v }}" defer></script>
   {% block scripts %}{% endblock %}
 </body>
 </html>

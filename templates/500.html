@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Bir sorun oluştu — rotam</title>
+  <meta name="color-scheme" content="light dark">
+  <style>
+    /* Standalone on purpose: the error page must not depend on the database, sessions or static files. */
+    :root { color-scheme: light dark; --bg: #F7F6FB; --fg: #1E1B34; --muted: #5E5A78; --brand: #5A55D8; --on: #FFFFFF; }
+    @media (prefers-color-scheme: dark) { :root { --bg: #16151F; --fg: #F2F1FA; --muted: #B3B0CC; --brand: #9C98F2; --on: #16151F; } }
+    body { margin: 0; min-height: 100vh; display: grid; place-content: center; justify-items: center; gap: 0.5rem; padding: 2rem 1rem;
+           background: var(--bg); color: var(--fg); font-family: system-ui, -apple-system, "Segoe UI", sans-serif; text-align: center; line-height: 1.6; }
+    .code { margin: 0; font-size: clamp(5rem, 22vw, 9rem); font-weight: 800; line-height: 1; letter-spacing: -0.04em; color: var(--brand); }
+    h1 { margin: 0.5rem 0 0; font-size: 1.6rem; }
+    p { margin: 0; max-width: 34ch; color: var(--muted); }
+    a { display: inline-block; margin-top: 1.25rem; padding: 0.8rem 1.6rem; border-radius: 999px; background: var(--brand); color: var(--on); font-weight: 700; text-decoration: none; }
+  </style>
+</head>
+<body>
+  <p class="code" aria-hidden="true">500</p>
+  <h1>Bir şeyler ters gitti</h1>
+  <p>Bu bizim hatamız, senin değil. Birkaç saniye sonra tekrar dene; sorun sürerse biraz sonra yeniden uğra.</p>
+  <a href="/">Ana sayfaya dön</a>
+</body>
+</html>

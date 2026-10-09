@@ -17,12 +17,12 @@
       <li><strong>%{{ review.stats.percent }}</strong><small class="muted">plan yapıldı</small></li>
       <li><strong>{{ review.stats.done_minutes }} dk</strong><small class="muted">çalışma süresi</small></li>
       {% if review.stats.focus_minutes %}
-        <li><strong>⏱ {{ review.stats.focus_minutes }} dk</strong><small class="muted">odaklanarak geçen süre</small></li>
+        <li><strong>{{ review.stats.focus_minutes }} dk</strong><small class="muted">odaklanarak geçen süre</small></li>
       {% endif %}
       {% if review.stats.answered %}
         <li><strong>{{ review.stats.answered }}</strong><small class="muted">soru · %{{ review.stats.accuracy }} doğruluk</small></li>
       {% endif %}
-      <li><strong>🔥 {{ review.stats.streak }}</strong><small class="muted">gün seri</small></li>
+      <li><strong class="with-icon"><span class="flame">{% include "partials/icon.html" with name="flame" size="sm" %}</span>{{ review.stats.streak }}</strong><small class="muted">gün seri</small></li>
     </ul>
     {% for change in review.stats.mock_changes %}
       <p class="muted">{{ change.session }} denemesi: {{ change.before }} → {{ change.after }} net
@@ -31,7 +31,7 @@
   </section>
 {% empty %}
   <div class="card empty-state">
-    <div class="emoji" aria-hidden="true">📅</div>
+    <div class="empty-icon">{% include "partials/icon.html" with name="calendar" %}</div>
     <p class="muted">İlk değerlendirmen, ilk tam haftan bittikten sonraki pazartesi burada olacak.</p>
   </div>
 {% endfor %}

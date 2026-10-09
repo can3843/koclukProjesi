@@ -109,6 +109,64 @@
   });
   if (themeChoices.length) markThemeChoice();
 
+  /* ---------- Top bar: blur and bottom line once the page is scrolled ---------- */
+
+  var topbar = document.querySelector("[data-topbar]");
+  if (topbar) {
+    var onScroll = function () { topbar.dataset.scrolled = String(window.scrollY > 8); };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    onScroll();
+  }
+
+  /* ---------- Forms: show/hide password, Caps Lock hint, loading state on submit ---------- */
+
+  function svgIcon(name) {
+    return '<svg class="icon" aria-hidden="true"><use href="#i-' + name + '"/></svg>';
+  }
+
+  document.querySelectorAll(".field input[type=password]").forEach(function (input) {
+    var wrap = document.createElement("div");
+    wrap.className = "pw-wrap";
+    input.parentNode.insertBefore(wrap, input);
+    wrap.appendChild(input);
+
+    var toggle = document.createElement("button");
+    toggle.type = "button";
+    toggle.className = "icon-btn pw-toggle";
+    toggle.setAttribute("aria-label", "Parolayı göster");
+    toggle.setAttribute("aria-pressed", "false");
+    toggle.innerHTML = svgIcon("eye");
+    wrap.appendChild(toggle);
+    toggle.addEventListener("click", function () {
+      var show = input.type === "password";
+      input.type = show ? "text" : "password";
+      toggle.setAttribute("aria-pressed", String(show));
+      toggle.setAttribute("aria-label", show ? "Parolayı gizle" : "Parolayı göster");
+      toggle.innerHTML = svgIcon(show ? "eye-off" : "eye");
+    });
+
+    var hint = document.createElement("p");
+    hint.className = "caps-hint";
+    hint.hidden = true;
+    hint.innerHTML = svgIcon("alert") + "Caps Lock açık";
+    wrap.after(hint);
+    var check = function (event) {
+      if (event.getModifierState) hint.hidden = !event.getModifierState("CapsLock");
+    };
+    input.addEventListener("keydown", check);
+    input.addEventListener("keyup", check);
+    input.addEventListener("blur", function () { hint.hidden = true; });
+  });
+
+  document.querySelectorAll("[data-auth-form]").forEach(function (form) {
+    var button = form.querySelector("button[type=submit]");
+    form.addEventListener("submit", function () {
+      if (button) button.dataset.loading = "true";
+    });
+    // coming back with the browser's back button must not leave the button stuck
+    window.addEventListener("pageshow", function () { if (button) delete button.dataset.loading; });
+  });
+
   /* ---------- Tasks (today screen): mark done / skip / undo without a page reload ---------- */
 
   var taskList = document.querySelector("[data-task-list]");
@@ -141,7 +199,7 @@
   }
 
   function confetti() {
-    var colors = ["#5B5BD6", "#8E6CEF", "#FF7A59", "#22A97A", "#E89B16"];
+    var colors = ["#6A63EE", "#B9B6FF", "#FF8A5C", "#3FB68B", "#F2B84B"];
     var holder = document.createElement("div");
     holder.className = "confetti";
     holder.setAttribute("aria-hidden", "true");

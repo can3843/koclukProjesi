@@ -60,7 +60,7 @@
   function showSaved(body) {
     var card = document.querySelector('[data-task][data-task-id="' + body.task.id + '"]');
     var label = card && card.querySelector("[data-focus-label]");
-    if (label) label.textContent = body.task.focus_seconds >= 60 ? " · ⏱ " + formatMinutes(body.task.focus_seconds) : "";
+    if (label) label.textContent = body.task.focus_seconds >= 60 ? " · " + formatMinutes(body.task.focus_seconds) + " odak" : "";
     var total = document.querySelector("[data-focus-total]");
     if (total && body.day) total.textContent = formatMinutes(body.day.focus_seconds);
   }
@@ -121,7 +121,7 @@
     els.phase.textContent = isFocus ? "Odak" : state.phase === "long" ? "Uzun mola" : "Mola";
     panel.classList.toggle("is-break", !isFocus);
     els.task.textContent = state.title;
-    els.cycle.textContent = state.cycles ? "Tamamlanan odak: " + state.cycles + " 🍅" : "İlk odak turun";
+    els.cycle.textContent = state.cycles ? "Tamamlanan odak turu: " + state.cycles : "İlk odak turun";
     els.toggle.textContent = state.running ? "Duraklat" : isFocus && state.remaining === cfg.focus && !state.started ? "Başlat" : "Devam";
     els.skip.hidden = isFocus;
     document.title = state.running ? clock + " · " + els.phase.textContent + " — rotam" : baseTitle;
@@ -165,7 +165,7 @@
       state.remaining = long ? cfg.longPause : cfg.pause;
       state.running = true; // the break starts by itself
       state.lastTick = Date.now();
-      rotam.toast && rotam.toast("Odak turu bitti, mola zamanı! 🍅", "success");
+      rotam.toast && rotam.toast("Odak turu bitti, mola zamanı!", "success");
     } else {
       state.phase = "focus";
       state.remaining = cfg.focus;

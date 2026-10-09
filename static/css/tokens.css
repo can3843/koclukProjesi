@@ -1,0 +1,196 @@
+/* =====================================================================
+   Rotam design tokens (premium-site-upgrade, direction: Soft Product)
+   ---------------------------------------------------------------------
+   Everything is derived from the BRAND SETTINGS below. Light is the default,
+   dark follows the system or <html data-theme="dark|light"> (settings page).
+   The old Phase 1 names (--primary, --text, --border, --radius-lg ...) are kept
+   as aliases at the bottom so every template keeps working.
+   ===================================================================== */
+
+/* ---------- Brand settings (change only here) ---------- */
+:root {
+  --tint-h: 277;             /* neutrals lean slightly towards the brand indigo */
+  --tint-c: 0.010;
+  --brand-l: 0.54;           /* white text on the brand fill stays above 4.5:1 up to about 0.56 */
+  --brand-c: 0.19;
+  --brand-h: 277;
+
+  --ff-display: "Figtree", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --ff-body:    "Figtree", system-ui, -apple-system, "Segoe UI", sans-serif;
+
+  --r-base: 0.875rem;        /* soft, friendly corners */
+}
+
+/* ---------- Light theme ---------- */
+:root {
+  color-scheme: light;
+
+  --bg:            oklch(0.982 var(--tint-c) var(--tint-h));
+  --bg-subtle:     oklch(0.968 calc(var(--tint-c) * 1.2) var(--tint-h));
+  --surface:       oklch(1 0 0);
+  --surface-2:     oklch(0.962 calc(var(--tint-c) * 1.2) var(--tint-h));
+  --surface-hover: oklch(0.945 calc(var(--tint-c) * 1.4) var(--tint-h));
+
+  --line:          oklch(0.25 var(--tint-c) var(--tint-h) / 0.10);
+  --line-strong:   oklch(0.25 var(--tint-c) var(--tint-h) / 0.20);
+
+  --fg:            oklch(0.22 calc(var(--tint-c) * 2) var(--tint-h));
+  --fg-muted:      oklch(0.46 calc(var(--tint-c) * 2) var(--tint-h));
+  --fg-subtle:     oklch(0.56 var(--tint-c) var(--tint-h));
+
+  --brand:         oklch(var(--brand-l) var(--brand-c) var(--brand-h));
+  --brand-hover:   oklch(calc(var(--brand-l) - 0.05) var(--brand-c) var(--brand-h));
+  --brand-soft:    oklch(var(--brand-l) var(--brand-c) var(--brand-h) / 0.10);
+  --brand-ink:     oklch(calc(var(--brand-l) - 0.04) var(--brand-c) var(--brand-h));
+  --brand-fg:      oklch(0.99 0 0);
+
+  /* the only warm note: streak flame, celebration and the compass needle */
+  --accent:        oklch(0.70 0.17 45);
+
+  --success:       oklch(0.58 0.14 160);
+  --success-ink:   oklch(0.42 0.11 160);
+  --warning:       oklch(0.76 0.15 75);
+  --warning-ink:   oklch(0.45 0.10 70);
+  --danger:        oklch(0.58 0.20 25);
+  --danger-ink:    oklch(0.46 0.17 25);
+
+  --success-soft:  color-mix(in oklab, var(--success) 14%, var(--surface));
+  --warning-soft:  color-mix(in oklab, var(--warning) 20%, var(--surface));
+  --danger-soft:   color-mix(in oklab, var(--danger) 11%, var(--surface));
+
+  --focus: oklch(var(--brand-l) var(--brand-c) var(--brand-h) / 0.55);
+
+  --elev-xs: 0 1px 2px oklch(0.2 0.02 var(--tint-h) / 0.06);
+  --elev-sm: 0 1px 2px oklch(0.2 0.02 var(--tint-h) / 0.06),
+             0 2px 8px oklch(0.2 0.02 var(--tint-h) / 0.05);
+  --elev-md: 0 1px 2px oklch(0.2 0.02 var(--tint-h) / 0.05),
+             0 6px 16px oklch(0.2 0.02 var(--tint-h) / 0.07),
+             0 16px 36px -10px oklch(0.2 0.02 var(--tint-h) / 0.10);
+  --elev-lg: 0 2px 4px oklch(0.2 0.02 var(--tint-h) / 0.04),
+             0 14px 30px -6px oklch(0.2 0.02 var(--tint-h) / 0.12),
+             0 36px 70px -18px oklch(0.2 0.02 var(--tint-h) / 0.18);
+  --highlight: inset 0 1px 0 oklch(1 0 0 / 0.7);
+}
+
+/* ---------- Dark theme (system preference unless a theme was chosen) ---------- */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --bg:            oklch(0.165 calc(var(--tint-c) * 1.6) var(--tint-h));
+    --bg-subtle:     oklch(0.19  calc(var(--tint-c) * 1.6) var(--tint-h));
+    --surface:       oklch(0.215 calc(var(--tint-c) * 1.6) var(--tint-h));
+    --surface-2:     oklch(0.25  calc(var(--tint-c) * 1.6) var(--tint-h));
+    --surface-hover: oklch(0.285 calc(var(--tint-c) * 1.6) var(--tint-h));
+    --line:          oklch(1 0 0 / 0.08);
+    --line-strong:   oklch(1 0 0 / 0.15);
+    --fg:            oklch(0.96 0.005 var(--tint-h));
+    --fg-muted:      oklch(0.74 0.015 var(--tint-h));
+    --fg-subtle:     oklch(0.63 0.012 var(--tint-h));
+    --brand:         oklch(0.64 var(--brand-c) var(--brand-h));
+    --brand-hover:   oklch(0.69 var(--brand-c) var(--brand-h));
+    --brand-soft:    oklch(0.64 var(--brand-c) var(--brand-h) / 0.20);
+    --brand-ink:     oklch(0.80 0.12 var(--brand-h));
+    --brand-fg:      oklch(0.15 0.02 var(--tint-h));
+    --accent:        oklch(0.76 0.15 45);
+    --success:       oklch(0.70 0.14 160);
+    --success-ink:   oklch(0.82 0.12 160);
+    --warning:       oklch(0.80 0.14 80);
+    --warning-ink:   oklch(0.86 0.12 85);
+    --danger:        oklch(0.66 0.19 25);
+    --danger-ink:    oklch(0.80 0.13 25);
+    --elev-xs: 0 1px 2px oklch(0 0 0 / 0.4);
+    --elev-sm: 0 1px 2px oklch(0 0 0 / 0.4), 0 2px 8px oklch(0 0 0 / 0.25);
+    --elev-md: 0 1px 2px oklch(0 0 0 / 0.4), 0 8px 24px -6px oklch(0 0 0 / 0.5);
+    --elev-lg: 0 2px 4px oklch(0 0 0 / 0.4), 0 24px 56px -12px oklch(0 0 0 / 0.65);
+    --highlight: inset 0 1px 0 oklch(1 0 0 / 0.07);
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg:            oklch(0.165 calc(var(--tint-c) * 1.6) var(--tint-h));
+  --bg-subtle:     oklch(0.19  calc(var(--tint-c) * 1.6) var(--tint-h));
+  --surface:       oklch(0.215 calc(var(--tint-c) * 1.6) var(--tint-h));
+  --surface-2:     oklch(0.25  calc(var(--tint-c) * 1.6) var(--tint-h));
+  --surface-hover: oklch(0.285 calc(var(--tint-c) * 1.6) var(--tint-h));
+  --line:          oklch(1 0 0 / 0.08);
+  --line-strong:   oklch(1 0 0 / 0.15);
+  --fg:            oklch(0.96 0.005 var(--tint-h));
+  --fg-muted:      oklch(0.74 0.015 var(--tint-h));
+  --fg-subtle:     oklch(0.63 0.012 var(--tint-h));
+  --brand:         oklch(0.64 var(--brand-c) var(--brand-h));
+  --brand-hover:   oklch(0.69 var(--brand-c) var(--brand-h));
+  --brand-soft:    oklch(0.64 var(--brand-c) var(--brand-h) / 0.20);
+  --brand-ink:     oklch(0.80 0.12 var(--brand-h));
+  --brand-fg:      oklch(0.15 0.02 var(--tint-h));
+  --accent:        oklch(0.76 0.15 45);
+  --success:       oklch(0.70 0.14 160);
+  --success-ink:   oklch(0.82 0.12 160);
+  --warning:       oklch(0.80 0.14 80);
+  --warning-ink:   oklch(0.86 0.12 85);
+  --danger:        oklch(0.66 0.19 25);
+  --danger-ink:    oklch(0.80 0.13 25);
+  --elev-xs: 0 1px 2px oklch(0 0 0 / 0.4);
+  --elev-sm: 0 1px 2px oklch(0 0 0 / 0.4), 0 2px 8px oklch(0 0 0 / 0.25);
+  --elev-md: 0 1px 2px oklch(0 0 0 / 0.4), 0 8px 24px -6px oklch(0 0 0 / 0.5);
+  --elev-lg: 0 2px 4px oklch(0 0 0 / 0.4), 0 24px 56px -12px oklch(0 0 0 / 0.65);
+  --highlight: inset 0 1px 0 oklch(1 0 0 / 0.07);
+}
+
+/* ---------- Type, space, radius, motion ---------- */
+:root {
+  --fs-xs:   0.75rem;
+  --fs-sm:   0.875rem;
+  --fs-base: 1rem;
+  --fs-lg:   1.125rem;
+  --fs-xl:   clamp(1.25rem, 1.1rem + 0.6vw, 1.5rem);
+  --fs-2xl:  clamp(1.5rem, 1.25rem + 1.1vw, 1.9rem);
+  --fs-3xl:  clamp(1.85rem, 1.4rem + 2vw, 2.6rem);
+  --fs-4xl:  clamp(2.2rem, 1.5rem + 3.2vw, 3.5rem);
+  --fs-5xl:  clamp(2.6rem, 1.5rem + 5vw, 4.6rem);
+
+  --ls-tight:   -0.022em;
+  --ls-tighter: -0.035em;
+  --ls-wide:     0.08em;
+
+  --space-1: 0.25rem; --space-2: 0.5rem;  --space-3: 0.75rem; --space-4: 1rem;
+  --space-5: 1.25rem; --space-6: 1.5rem;  --space-8: 2rem;    --space-10: 2.5rem;
+  --space-12: 3rem;   --space-16: 4rem;   --space-24: 6rem;
+  --section-y: clamp(3.5rem, 9vw, 6.5rem);
+  --gutter: clamp(1rem, 4vw, 2rem);
+
+  --r-sm:   calc(var(--r-base) * 0.6);
+  --r-md:   var(--r-base);
+  --r-lg:   calc(var(--r-base) * 1.4);
+  --r-xl:   calc(var(--r-base) * 2);
+  --r-full: 9999px;
+
+  --control-h-sm: 2.25rem;
+  --control-h:    2.75rem;   /* 44px: touch target for buttons and inputs alike */
+  --control-h-lg: 3.25rem;
+
+  --dur-fast:   120ms;
+  --dur-base:   200ms;
+  --dur-slow:   320ms;
+  --e-out:    cubic-bezier(0.16, 1, 0.3, 1);
+  --e-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --e-in:     cubic-bezier(0.7, 0, 0.84, 0);
+
+  --tabbar-h: 68px;
+}
+
+/* ---------- Aliases for the names used by the older stylesheet and templates ---------- */
+:root {
+  --border:        var(--line);
+  --text:          var(--fg);
+  --text-muted:    var(--fg-muted);
+  --primary:       var(--brand);
+  --primary-hover: var(--brand-hover);
+  --primary-soft:  var(--brand-soft);
+  --on-primary:    var(--brand-fg);
+  --danger-text:   var(--danger-ink);
+  --radius-lg:     var(--r-lg);
+  --radius-md:     var(--r-md);
+  --radius-pill:   var(--r-full);
+  --shadow:        var(--elev-sm);
+  --font:          var(--ff-body);
+}

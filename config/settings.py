@@ -1,6 +1,7 @@
 """Django settings for Rotam. Environment-dependent values come from os.environ."""
 
 import os
+import time
 from pathlib import Path
 
 import dj_database_url
@@ -69,6 +70,7 @@ TEMPLATES = [
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
                 "planner.context_processors.countdown",
+                "core.context_processors.assets",
             ],
         },
     },
@@ -116,6 +118,9 @@ LANGUAGE_CODE = "tr"
 TIME_ZONE = "Europe/Istanbul"
 USE_I18N = True
 USE_TZ = True
+
+# Query string added to CSS/JS links so a new deploy is never served from a stale browser or CDN cache.
+ASSET_VERSION = (os.environ.get("VERCEL_GIT_COMMIT_SHA") or str(int(time.time())))[:10]
 
 STATIC_URL = "/static/"
 STATICFILES_DIRS = [BASE_DIR / "static"]

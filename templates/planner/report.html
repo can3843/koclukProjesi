@@ -8,7 +8,7 @@
 <p class="muted">Dürüst bir rapor: vaktin, ihtiyacın ve tahmini net aralığın.</p>
 
 <section class="card report-card">
-  <h2>⏳ Zaman</h2>
+  <h2 class="with-icon"><span class="h-icon">{% include "partials/icon.html" with name="clock" %}</span>Zaman</h2>
   <p>
     Sınava <strong>{{ countdown.days }} gün</strong> var{% if countdown.estimated %} (tarih tahmini){% endif %}.
     Toplam yaklaşık <strong>{{ total_minutes|hours_of }} saatin</strong> var; denemeler, tekrarlar ve beklenmedik günler için pay ayırınca
@@ -17,12 +17,12 @@
 </section>
 
 <section class="card report-card">
-  <h2>📚 İhtiyaç</h2>
+  <h2 class="with-icon"><span class="h-icon">{% include "partials/icon.html" with name="layers" %}</span>İhtiyaç</h2>
   <p>Eksik konularını tamamlamak için <strong>~{{ required_minutes|hours_of }} saat</strong> gerekiyor.</p>
 </section>
 
 <section class="card report-card {% if fits_all %}report-good{% endif %}">
-  <h2>{% if fits_all %}🎉{% else %}🎯{% endif %} Karar</h2>
+  <h2 class="with-icon"><span class="h-icon">{% if fits_all %}{% include "partials/icon.html" with name="check-circle" %}{% else %}{% include "partials/icon.html" with name="target" %}{% endif %}</span>Karar</h2>
   {% if fits_all %}
     <p>Vaktin yetiyor 🎉, ekstra zamanı soru çözümüne ayırdık.</p>
   {% else %}
@@ -31,7 +31,7 @@
 </section>
 
 <section class="card report-card">
-  <h2>📈 Tahmini net aralığın</h2>
+  <h2 class="with-icon"><span class="h-icon">{% include "partials/icon.html" with name="trending" %}</span>Tahmini net aralığın</h2>
   <ul class="range-list">
     {% for s in sessions %}
       <li>
@@ -54,7 +54,7 @@
 
 {% if target_rows %}
 <section class="card report-card">
-  <h2>🏁 Hedefin</h2>
+  <h2 class="with-icon"><span class="h-icon">{% include "partials/icon.html" with name="flag" %}</span>Hedefin</h2>
   {% for row in target_rows %}
     <p>
       <strong>{{ row.code }} hedefin: {{ row.target|floatformat:"-1" }} net.</strong>
@@ -72,7 +72,7 @@
 {% endif %}
 
 <section class="card report-card">
-  <h2>🧭 Odaklanacağın ilk konular</h2>
+  <h2 class="with-icon"><span class="h-icon">{% include "partials/icon.html" with name="compass" %}</span>Odaklanacağın ilk konular</h2>
   {% if focus %}
     <ol class="focus-list">
       {% for pt in focus %}
@@ -86,7 +86,7 @@
 
 {% if dropped_groups %}
 <section class="card report-card">
-  <h2>✋ Bunları bırakıyoruz</h2>
+  <h2 class="with-icon"><span class="h-icon">{% include "partials/icon.html" with name="minus-circle" %}</span>Bunları bırakıyoruz</h2>
   <p class="muted">Vaktin {{ dropped_count }} konuya yetmiyor. Bu bir öneri; sonradan istersen ayarlardan ekleyebileceksin. Dersi açıp konulara bakabilirsin.</p>
   {% for group in dropped_groups %}
     <details class="subject-box drop-box">
@@ -109,7 +109,7 @@
 {% endif %}
 
 <section class="card report-card">
-  <h2>🗓️ Şu anki dönemin: {{ rule.name }}</h2>
+  <h2 class="with-icon"><span class="h-icon">{% include "partials/icon.html" with name="calendar" %}</span>Şu anki dönemin: {{ rule.name }}</h2>
   <p>{{ rule.focus }}</p>
 </section>
 

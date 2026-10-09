@@ -1,33 +1,81 @@
 {% extends "base.html" %}
 
+{% block title %}rotam — Sınavına giden en kısa rota{% endblock %}
+
 {% block guest_content %}
 <section class="hero">
-  <h1>Sınavına giden en kısa rota.</h1>
-  <p>Kalan süreni, seviyeni ve vaktini söyle; her gün ne çalışacağını biz söyleyelim.</p>
-  <div class="cta">
-    <a class="btn btn-on-hero" href="{% url 'register' %}">Hemen başla</a>
-    <a class="btn btn-outline-hero" href="{% url 'login' %}">Giriş yap</a>
+  <div>
+    <p class="eyebrow" data-stagger style="--i:0">YKS için kişisel dijital koç</p>
+    <h1 data-stagger style="--i:1">Sınavına giden <em>en kısa rota.</em></h1>
+    <p class="lead" data-stagger style="--i:2">Kalan süreni, seviyeni ve vaktini söyle; her gün ne çalışacağını biz söyleyelim.</p>
+    <div class="cta" data-stagger style="--i:3">
+      <a class="btn btn-lg" href="{% url 'register' %}">Hemen başla {% include "partials/icon.html" with name="arrow-right" %}</a>
+      <a class="btn btn-lg btn-secondary" href="{% url 'login' %}">Giriş yap</a>
+    </div>
+    <p class="hero-note" data-stagger style="--i:4">Ücretsiz başla. İlk planın birkaç dakikada hazır.</p>
+  </div>
+
+  <div class="preview" data-stagger style="--i:3" role="img" aria-label="Örnek bir günün görev listesi">
+    <span class="preview-tag">ÖRNEK GÜN</span>
+    <div class="card day-summary">
+      {% include "partials/progress_ring.html" with percent=33 ring_offset=143.12 %}
+      <div class="day-summary-text">
+        <p class="day-count"><strong>1</strong> / 3 görev</p>
+        <p class="muted">45 / 135 dk</p>
+        <p class="streak with-icon">{% include "partials/icon.html" with name="flame" size="sm" %}<span><strong>6</strong> gün seri</span></p>
+      </div>
+    </div>
+    <div class="task-list">
+      <article class="task-card is-done" style="--task-color: #5B5BD6">
+        <div class="task-main">
+          <span class="check is-checked">{% include "partials/icon.html" with name="check" %}</span>
+          <div class="task-body">
+            <h3 class="task-title"><span class="kind-icon">{% include "partials/icon.html" with name="book" size="sm" %}</span>Matematik – Üslü Sayılar: 45 dk konu çalışması</h3>
+            <p class="task-meta">45 dk · <span class="peak-label">{% include "partials/icon.html" with name="sun" size="sm" %}Sabah ilk iş</span></p>
+          </div>
+        </div>
+      </article>
+      <article class="task-card" style="--task-color: #14A3C7">
+        <div class="task-main">
+          <span class="check"></span>
+          <div class="task-body">
+            <h3 class="task-title"><span class="kind-icon">{% include "partials/icon.html" with name="pencil" size="sm" %}</span>Fizik – Kuvvet ve Hareket: 30 soru</h3>
+            <p class="task-meta">40 dk</p>
+          </div>
+        </div>
+      </article>
+      <article class="task-card" style="--task-color: #FF7A59">
+        <div class="task-main">
+          <span class="check"></span>
+          <div class="task-body">
+            <h3 class="task-title"><span class="kind-icon">{% include "partials/icon.html" with name="repeat" size="sm" %}</span>Tekrar: Oran-Orantı – 15 soru</h3>
+            <p class="task-meta">20 dk</p>
+          </div>
+        </div>
+      </article>
+    </div>
   </div>
 </section>
 
 <section class="section">
-  <h2>Nasıl çalışır?</h2>
+  <span class="eyebrow reveal">Nasıl çalışır</span>
+  <h2 class="reveal">Üç adımda kendi rotan</h2>
   <ol class="steps">
-    <li class="card step">
+    <li class="card step reveal">
       <span class="step-num" aria-hidden="true">1</span>
       <div>
         <h3>Kendini anlat</h3>
         <p>Sınavını, günde ne kadar çalışabileceğini ve hangi konuları ne kadar bildiğini söyle. Beş kısa adım.</p>
       </div>
     </li>
-    <li class="card step">
+    <li class="card step reveal">
       <span class="step-num" aria-hidden="true">2</span>
       <div>
         <h3>Rotanı gör</h3>
         <p>Vaktin yetiyor mu, yetmiyor mu; dürüstçe söyleriz. Vakit yetmezse en çok net getirecek konulara odaklanırız.</p>
       </div>
     </li>
-    <li class="card step">
+    <li class="card step reveal">
       <span class="step-num" aria-hidden="true">3</span>
       <div>
         <h3>Her gün bir adım</h3>
@@ -38,21 +86,31 @@
 </section>
 
 <section class="section">
-  <h2>Dürüst bir koç</h2>
+  <span class="eyebrow reveal">Dürüst bir koç</span>
+  <h2 class="reveal">Söz vermeyiz, yol gösteririz</h2>
   <div class="values">
-    <div class="card value">
+    <div class="card value reveal">
+      <span class="icon-box">{% include "partials/icon.html" with name="target" %}</span>
       <h3>Puan sözü yok</h3>
       <p>Tahminler her zaman aralık olarak ve “tahmini” etiketiyle gösterilir.</p>
     </div>
-    <div class="card value">
+    <div class="card value reveal">
+      <span class="icon-box icon-box-warm">{% include "partials/icon.html" with name="heart" %}</span>
       <h3>Suçlama yok</h3>
       <p>Çalışamadığın gün başarısızlık değil; planın yeniden dağıtıldığı bir gündür.</p>
     </div>
-    <div class="card value">
+    <div class="card value reveal">
+      <span class="icon-box">{% include "partials/icon.html" with name="compass" %}</span>
       <h3>Kararı sen verirsin</h3>
       <p>Bir konuyu plandan çıkarmayı yalnızca öneririz. Sen onaylamadan hiçbir şey değişmez.</p>
     </div>
   </div>
+</section>
+
+<section class="cta-band reveal">
+  <h2>İlk rotanı birkaç dakikada çiz.</h2>
+  <p>Kalan günlerini en verimli şekilde kullanmanın en kısa yolu.</p>
+  <a class="btn btn-lg" href="{% url 'register' %}">Hemen başla {% include "partials/icon.html" with name="arrow-right" %}</a>
 </section>
 
 <p class="footnote">Verilerin sadece sana aittir. Başka hiçbir kullanıcı göremez.</p>
