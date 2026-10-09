@@ -1142,6 +1142,7 @@ Her faz kendi içinde çalışır, test edilebilir ve deploy edilebilir bir duru
 - Faz 0: Django projesi `config`, uygulamalar `accounts`, `catalog`, `planner`, `core`. Özel `User` modeli ilk migration'da. RLS migration'ı (`core/migrations/0001_enable_rls.py`, `core/rls.py`) yalnızca PostgreSQL'de çalışır (SQLite'ta atlanır); yeni tablo ekleyen her fazda `core.rls.enable_rls` çağıran yeni bir migration eklenecek. `USERNAME_FIELD` kontrolü için `email` alanı `unique=True`, büyük/küçük harf duyarsızlığı `UniqueConstraint(Lower("email"))` ile.
 - Faz 0: Vercel dokümanına göre `vercel.json` yazılmadı; `manage.py` + `WSGI_APPLICATION = "config.wsgi.application"` yeterli. `STATIC_ROOT` tanımlı, `collectstatic` Vercel'de otomatik çalışır.
 - Faz 0: Supabase dokümanına göre transaction pooler'da prepared statement kapalı (`prepare_threshold=None`); bağlantı dizesine `?sslmode=require` eklenmesi öneriliyor.
+- Faz 0: Supabase migration uygulandı, 10 tabloda RLS açık (politikasız; Advisor yalnızca INFO "RLS Enabled No Policy" gösteriyor, bu istenen durum). RLS SQL’inde `format(%I)` Django’nun `%` yer tutucusuyla çakıştığı için `quote_ident` kullanılıyor.
 - Yerel geliştirme Python 3.12 ile (`.venv` 3.12'den yeniden oluşturuldu).
 - YKS 2027 tarihleri tahmini (TYT 19 Haziran, AYT/YDT 20 Haziran 2027). ÖSYM takvimi açıklanınca `data/yks_2027.json` güncellenip `seed_exam_data` yeniden çalıştırılacak.
 
