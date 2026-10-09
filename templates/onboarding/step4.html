@@ -1,0 +1,49 @@
+{% extends "onboarding/base_step.html" %}
+{% load static %}
+
+{% block step %}
+<h1>Konuları ne kadar biliyorsun?</h1>
+<p class="muted">Dürüst ol, kimse görmüyor. Hiçbir şey değiştirmeden de devam edebilirsin; her konu “Bilmiyorum” ile başlar.</p>
+
+{% for group in groups %}
+<details class="subject-box" id="ders-{{ group.subject.pk }}"{% if forloop.first %} open{% endif %} data-subject-box>
+  <summary>
+    <span class="dot" style="background: {{ group.subject.color }}"></span>
+    <span class="subject-name">{{ group.subject.test.session.code }} {{ group.subject.name }}</span>
+    <span class="counter"><span data-marked>{{ group.marked }}</span> / {{ group.topics|length }} konu işaretlendi</span>
+  </summary>
+  <form method="post" class="levels-form" data-levels-form>
+    {% csrf_token %}
+    <input type="hidden" name="subject" value="{{ group.subject.pk }}">
+    <div class="quick-row" role="group" aria-label="{{ group.subject.name }} için hepsini işaretle">
+      <span class="muted">Hepsini:</span>
+      <button type="submit" name="set_all" value="0" class="btn-mini">Bilmiyorum</button>
+      <button type="submit" name="set_all" value="1" class="btn-mini">Biraz</button>
+      <button type="submit" name="set_all" value="2" class="btn-mini">İyiyim</button>
+    </div>
+    <ul class="topic-list">
+      {% for item in group.topics %}
+        <li class="topic-row">
+          <span class="topic-name">{{ item.topic.name }}</span>
+          <fieldset class="segment" aria-label="{{ item.topic.name }} seviyesi">
+            <label class="seg seg-0"><input type="radio" name="level_{{ item.topic.pk }}" value="0"{% if item.level == 0 %} checked{% endif %}><span>Bilmiyorum</span></label>
+            <label class="seg seg-1"><input type="radio" name="level_{{ item.topic.pk }}" value="1"{% if item.level == 1 %} checked{% endif %}><span>Biraz</span></label>
+            <label class="seg seg-2"><input type="radio" name="level_{{ item.topic.pk }}" value="2"{% if item.level == 2 %} checked{% endif %}><span>İyiyim</span></label>
+          </fieldset>
+        </li>
+      {% endfor %}
+    </ul>
+    <button type="submit" class="btn btn-secondary save-btn">Bu dersi kaydet</button>
+  </form>
+</details>
+{% endfor %}
+
+<form method="post" class="step-actions">
+  {% csrf_token %}
+  <input type="hidden" name="action" value="next">
+  <a class="btn btn-secondary" href="{% url 'onboarding_step' step=3 %}">Geri</a>
+  <button type="submit" class="btn">Devam</button>
+</form>
+{% endblock %}
+
+{% block scripts %}<script src="{% static 'js/onboarding.js' %}" defer></script>{% endblock %}

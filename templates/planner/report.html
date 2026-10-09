@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+{% load planner_extras %}
+
+{% block title %}Gerçekçilik raporu — rotam{% endblock %}
+
+{% block content %}
+<h1>Rotan hazır</h1>
+<p class="muted">Dürüst bir rapor: vaktin, ihtiyacın ve tahmini net aralığın.</p>
+
+<section class="card report-card">
+  <h2>⏳ Zaman</h2>
+  <p>
+    Sınava <strong>{{ countdown.days }} gün</strong> var{% if countdown.estimated %} (tarih tahmini){% endif %}.
+    Toplam yaklaşık <strong>{{ total_minutes|hours_of }} saatin</strong> var; denemeler, tekrarlar ve beklenmedik günler için pay ayırınca
+    konu ve soru çalışmasına <strong>~{{ study_minutes|hours_of }} saat</strong> kalıyor.
+  </p>
+</section>
+
+<section class="card report-card">
+  <h2>📚 İhtiyaç</h2>
+  <p>Eksik konularını tamamlamak için <strong>~{{ required_minutes|hours_of }} saat</strong> gerekiyor.</p>
+</section>
+
+<section class="card report-card {% if fits_all %}report-good{% endif %}">
+  <h2>{% if fits_all %}🎉{% else %}🎯{% endif %} Karar</h2>
+  {% if fits_all %}
+    <p>Vaktin yetiyor 🎉, ekstra zamanı soru çözümüne ayırdık.</p>
+  {% else %}
+    <p>Vaktin bütün konulara yetmiyor. En fazla neti getirecek konuları seçtik; planın, çıkabilecek soruların yaklaşık <strong>%{{ coverage }}</strong>’ını kapsıyor.</p>
+  {% endif %}
+</section>
+
+<section class="card report-card">
+  <h2>📈 Tahmini net aralığın</h2>
+  <ul class="range-list">
+    {% for s in sessions %}
+      <li>
+        <span class="range-name">{{ s.code }} <span class="badge">tahmini</span></span>
+        <span class="range-value">{{ s.low }}–{{ s.high }} <small class="muted">/ {{ s.question_count }}</small></span>
+        <small class="muted">Şu anki tahmin: ~{{ s.now }}</small>
+      </li>
+    {% endfor %}
+  </ul>
+  <details class="inline-details">
+    <summary>Test test göster</summary>
+    <ul class="range-list range-list-small">
+      {% for t in tests %}
+        <li><span class="range-name">{{ t.session_code }} {{ t.name }}</span><span class="range-value">{{ t.low }}–{{ t.high }} <small class="muted">/ {{ t.question_count }}</small></span></li>
+      {% endfor %}
+    </ul>
+  </details>
+  <p class="disclaimer">{{ disclaimer }}</p>
+</section>
+
+{% if target_rows %}
+<section class="card report-card">
+  <h2>🏁 Hedefin</h2>
+  {% for row in target_rows %}
+    <p>
+      <strong>{{ row.code }} hedefin: {{ row.target|floatformat:"-1" }} net.</strong>
+      {% if row.verdict == "ambitious" %}
+        Hedefin bu planla iddialı.
+        {% if row.plus %}Günde 1 saat fazla çalışırsan tahmini aralığın <strong>{{ row.plus.low }}–{{ row.plus.high }}</strong> olur.{% endif %}
+      {% elif row.verdict == "on_track" %}
+        Hedefinle aynı rotadayız.
+      {% else %}
+        Hedefini aşma ihtimalin var.
+      {% endif %}
+    </p>
+  {% endfor %}
+</section>
+{% endif %}
+
+<section class="card report-card">
+  <h2>🧭 Odaklanacağın ilk konular</h2>
+  {% if focus %}
+    <ol class="focus-list">
+      {% for pt in focus %}
+        <li><strong>{{ pt.topic.name }}</strong> <span class="muted">· {{ pt.topic.subject.name }}</span></li>
+      {% endfor %}
+    </ol>
+  {% else %}
+    <p class="muted">Bu dönemde yeni konuya başlamıyoruz; soru çözme ve tekrar ağırlıkta.</p>
+  {% endif %}
+</section>
+
+{% if dropped_groups %}
+<section class="card report-card">
+  <h2>✋ Bunları bırakıyoruz</h2>
+  <p class="muted">Vaktin {{ dropped_count }} konuya yetmiyor. Bu bir öneri; sonradan istersen ayarlardan ekleyebileceksin. Dersi açıp konulara bakabilirsin.</p>
+  {% for group in dropped_groups %}
+    <details class="subject-box drop-box">
+      <summary>
+        <span class="dot" style="background: {{ group.subject.color }}"></span>
+        <span class="subject-name">{{ group.subject.test.session.code }} {{ group.subject.name }}</span>
+        <span class="counter">{{ group.items|length }} konu · ~{{ group.hours }} saat</span>
+      </summary>
+      <ul class="dropped-list">
+        {% for item in group.items %}
+          <li>
+            <strong>{{ item.topic.name }}</strong><br>
+            <small class="muted">{{ item.questions }} için ~{{ item.hours }} saat istiyor{% if item.late %}; sınava az kaldığı için büyük konulara başlamıyoruz{% endif %}.</small>
+          </li>
+        {% endfor %}
+      </ul>
+    </details>
+  {% endfor %}
+</section>
+{% endif %}
+
+<section class="card report-card">
+  <h2>🗓️ Şu anki dönemin: {{ rule.name }}</h2>
+  <p>{{ rule.focus }}</p>
+</section>
+
+<a class="btn btn-block report-cta" href="{% url 'today' %}">Hadi başlayalım → Bugün</a>
+<p class="auth-foot"><a href="{% url 'plan_roadmap' %}">Yol haritasına bak</a></p>
+{% endblock %}

@@ -1,0 +1,40 @@
+{% extends "onboarding/base_step.html" %}
+{% load static planner_extras %}
+
+{% block step %}
+<h1>Günde ne kadar çalışabilirsin?</h1>
+<p class="muted">Gerçekçi ol: planı senin vaktine göre kuracağız. Sonradan değiştirebilirsin.</p>
+
+<form method="post" id="time-form" data-weekdays="{{ weekdays }}" data-weekends="{{ weekends }}" novalidate>
+  {% csrf_token %}
+
+  <div class="card slider-card">
+    <label for="id_weekday_minutes">Hafta içi</label>
+    <p class="slider-big">Günde <strong data-out="weekday_minutes">{{ weekday_value|duration_tr }}</strong></p>
+    <input type="range" id="id_weekday_minutes" name="weekday_minutes" min="30" max="600" step="30" value="{{ weekday_value }}" data-slider>
+    <div class="slider-scale"><span>30 dk</span><span>10 saat</span></div>
+    {% for error in form.weekday_minutes.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+  </div>
+
+  <div class="card slider-card">
+    <label for="id_weekend_minutes">Hafta sonu</label>
+    <p class="slider-big">Günde <strong data-out="weekend_minutes">{{ weekend_value|duration_tr }}</strong></p>
+    <input type="range" id="id_weekend_minutes" name="weekend_minutes" min="30" max="660" step="30" value="{{ weekend_value }}" data-slider>
+    <div class="slider-scale"><span>30 dk</span><span>11 saat</span></div>
+    {% for error in form.weekend_minutes.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+  </div>
+
+  <p class="notice notice-warning" data-heavy-warning{% if weekday_value <= 540 and weekend_value <= 540 %} hidden{% endif %}>
+    Bu çok yoğun bir tempo. Uzun vadede yorulmamak için biraz daha az planlayıp dinlenmeye de yer açabilirsin.
+  </p>
+
+  <p class="card total-card">Sınava kadar yaklaşık <strong data-total>{{ total_hours }}</strong> saatin var.</p>
+
+  <div class="step-actions">
+    <a class="btn btn-secondary" href="{% url 'onboarding_step' step=1 %}">Geri</a>
+    <button type="submit" class="btn">Devam</button>
+  </div>
+</form>
+{% endblock %}
+
+{% block scripts %}<script src="{% static 'js/onboarding.js' %}" defer></script>{% endblock %}

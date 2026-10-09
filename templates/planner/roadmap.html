@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block title %}Yol haritası — rotam{% endblock %}
+
+{% block content %}
+<h1>Yol haritan</h1>
+<p class="muted">Sınava giden dönemler ve konuların çalışma sırası. Haftalar kaba bir tahmindir.</p>
+
+<section class="card">
+  <h2>Dönemler</h2>
+  <ol class="timeline">
+    {% for seg in segments %}
+      <li class="timeline-item{% if seg.current %} is-current{% endif %}">
+        <span class="timeline-dot" aria-hidden="true"></span>
+        <div>
+          <strong>{{ seg.rule.name }}</strong>
+          {% if seg.current %}<span class="badge badge-here">Şu an buradasın</span>{% endif %}
+          <p class="muted">{{ seg.start|date:"j M" }} – {{ seg.end|date:"j M Y" }} · {{ seg.days }} gün</p>
+        </div>
+      </li>
+    {% endfor %}
+  </ol>
+  <p><strong>{{ rule.name }}:</strong> {{ rule.focus }}</p>
+</section>
+
+<section class="section-gap">
+  <h2>Konu sırası</h2>
+  {% for group in groups %}
+    <div class="card roadmap-subject">
+      <h3><span class="dot" style="background: {{ group.subject.color }}"></span>{{ group.subject.test.session.code }} {{ group.subject.name }}</h3>
+      <ol class="roadmap-list">
+        {% for item in group.topics %}
+          <li>
+            <span>{{ item.topic.name }}{% if item.prerequisite %} <small class="badge">ön koşul</small>{% endif %}</span>
+            <small class="muted">{% if item.week %}~{{ item.week }}. hafta{% else %}pratikle{% endif %}</small>
+          </li>
+        {% endfor %}
+      </ol>
+    </div>
+  {% empty %}
+    <div class="card empty-state">
+      <div class="emoji" aria-hidden="true">🧘</div>
+      <p class="muted">Bu dönemde yeni konuya başlamıyoruz; soru çözme ve tekrar ağırlıkta.</p>
+    </div>
+  {% endfor %}
+</section>
+
+{% if dropped_count %}
+<p class="notice">Vaktin yetmediği için {{ dropped_count }} konuyu planın dışında bıraktık.</p>
+{% endif %}
+<a class="btn btn-secondary btn-block" href="{% url 'plan_report' %}">Raporu gör</a>
+{% endblock %}

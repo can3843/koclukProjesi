@@ -1058,14 +1058,14 @@ Her faz kendi içinde çalışır, test edilebilir ve deploy edilebilir bir duru
 
 ### Faz 3 — Tanışma, plan motoru çekirdeği ve gerçekçilik raporu
 
-- [ ] `planner` modelleri: `StudentProfile`, `TopicProgress`, `Plan`, `PlanTopic` (+ ileride kullanılacak `MockExam`, `MockScore` bu fazda oluşturulabilir çünkü tanışmada deneme girilir) + RLS migration güncellemesi
-- [ ] Motor: `config.py`, `types.py`, `phases.py`, `capacity.py`, `needs.py`, `selection.py`, `projection.py` (§6.2–6.6)
-- [ ] `services.build_plan` (görev üretimi hariç; görevler Faz 4'te)
-- [ ] Tanışma middleware'i: tamamlanmamışsa kaldığı adıma yönlendir
-- [ ] Tanışma adımları 1–5 (§7.1–7.5), `onboarding.js` (kaydırıcılar, segment kontrol, ders ders otomatik kayıt)
-- [ ] Gerçekçilik raporu (`/plan/rapor/`) (§7.6) ve yol haritası (`/plan/`) (§8.4, "ekle" butonu hariç)
-- [ ] Üst barda geri sayım çipi
-- [ ] Testler: §6.10'daki 1, 2, 3, 4, 11, 12 numaralı senaryolar; tanışma akışı; tanışmayı bitirmeden `/plan/`'a giden kullanıcının yönlendirilmesi; başka kullanıcının planına erişilememesi
+- [x] `planner` modelleri: `StudentProfile`, `TopicProgress`, `Plan`, `PlanTopic` (+ ileride kullanılacak `MockExam`, `MockScore` bu fazda oluşturulabilir çünkü tanışmada deneme girilir) + RLS migration güncellemesi
+- [x] Motor: `config.py`, `types.py`, `phases.py`, `capacity.py`, `needs.py`, `selection.py`, `projection.py` (§6.2–6.6)
+- [x] `services.build_plan` (görev üretimi hariç; görevler Faz 4'te)
+- [x] Tanışma middleware'i: tamamlanmamışsa kaldığı adıma yönlendir
+- [x] Tanışma adımları 1–5 (§7.1–7.5), `onboarding.js` (kaydırıcılar, segment kontrol, ders ders otomatik kayıt)
+- [x] Gerçekçilik raporu (`/plan/rapor/`) (§7.6) ve yol haritası (`/plan/`) (§8.4, "ekle" butonu hariç)
+- [x] Üst barda geri sayım çipi
+- [x] Testler: §6.10'daki 1, 2, 3, 4, 11, 12 numaralı senaryolar; tanışma akışı; tanışmayı bitirmeden `/plan/`'a giden kullanıcının yönlendirilmesi; başka kullanıcının planına erişilememesi
 
 **Kabul kriterleri:** Yeni bir kullanıcı kayıt olup tanışmayı bitirince anlaşılır, dürüst bir rapor görüyor; ön koşul kuralları ve P2 büyük konu kuralı testlerle doğrulanmış.
 
@@ -1133,7 +1133,7 @@ Her faz kendi içinde çalışır, test edilebilir ve deploy edilebilir bir duru
 - [x] Faz 0 — İskelet ve ilk deploy (canlı: https://kocluk-projesi.vercel.app)
 - [x] Faz 1 — Tasarım sistemi, karşılama ve üyelik
 - [x] Faz 2 — Sınav kataloğu ve konu veritabanı (Supabase'e migration ve seed uygulandı)
-- [ ] Faz 3 — Tanışma, plan motoru çekirdeği ve gerçekçilik raporu
+- [x] Faz 3 — Tanışma, plan motoru çekirdeği ve gerçekçilik raporu (Supabase'e migration uygulandı)
 - [ ] Faz 4 — Günlük görevler ve tekrar sistemi
 - [ ] Faz 5 — Denemeler, uyarlama ve haftalık değerlendirme
 - [ ] Faz 6 — İlerleme paneli, ayarlar ve sağlamlaştırma
@@ -1147,6 +1147,7 @@ Her faz kendi içinde çalışır, test edilebilir ve deploy edilebilir bir duru
 - Faz 1: Tasarım sistemi `static/css/main.css` içinde (açık/koyu tema: `data-theme` + `prefers-color-scheme`, seçim `localStorage`'da). Kayıt/giriş/çıkış `accounts` uygulamasında; giriş `LoginView` + e-posta ile `EmailAuthenticationForm`, e-posta her yerde küçük harfe çevrilir (`User.save`, `get_by_natural_key` büyük/küçük harf duyarsız). `/bugun/` şimdilik geçici "yakında" sayfası; Plan/Deneme/İlerleme/Profil sekmeleri pasif. Kayıttan sonra şimdilik `/bugun/`'e gidilir, Faz 3'te tanışmaya yönlenecek. Logo `static/img/logo.svg`. Honeypot ve hız sınırı Faz 6'da.
 - Faz 2: `catalog` modelleri, `validation.py` (soru toplamı uyarısı, test toplamı/ön koşul döngüsü/kendi kendine ön koşul/farklı sınav hataları), `check_exam_data` ve `seed_exam_data` (slug'a göre upsert; doğrulama hata verirse transaction geri alınır). `data/yks_2027.json`: 3 oturum, 9 test, 23 ders, 252 konu, 4 alan; hepsi `is_estimated=true`. Konu başlıkları MEB'in 2026 YKS konu-kazanım PDF'inden, soru ağırlıkları ve süreler tahmini (bkz. `data/KAYNAKLAR.md`, `data/DOGRULANACAKLAR.md`). RLS: `core/migrations/0002_enable_rls_catalog.py`. Veriyi yeniden üretmek için kullanılan tek seferlik betik repoda yok; JSON elle ya da `/yonetim/` ile güncellenir.
 - Faz 2: Supabase'de 8 yeni tablo, hepsinde RLS açık; 252 konu, 29 ön koşul, 4 alan yüklendi. Doğrulanacak değerler `data/DOGRULANACAKLAR.md`'de.
+- Faz 3: Motor `planner/engine/` (saf Python, Django import etmez): `config`, `types`, `phases`, `capacity` (gün gün kapasite + deneme takvimi), `needs`, `selection` (paket bazlı açgözlü seçim), `projection`; ana giriş `make_plan`. Tüm sabitler `config.py`'de; §6.2'de olmayan birkaç sabit (yuvarlama, son 3 gün deneme yok, ilk 30 gün yalnız TYT, +1 saat senaryosu vb.) dosyanın altına eklendi. `PlanTopic.start_day` (yol haritasındaki kaba hafta için) ve `Plan.budget` JSON'una `fits_all`, `mock_count`, `exam_date` eklendi. `MockExam.task` Faz 4'te Task ile birlikte eklenecek. `big_topic_late`: konu büyük, planda `new_small` bütçesi var ama toplam `new_any` bütçesi konunun öğrenme ihtiyacından küçük. Tanışma: `/baslangic/1-5/`, `OnboardingMiddleware` tamamlanmamış kullanıcıyı kaldığı adıma yönlendirir; adım 4'te ders başına otomatik kayıt (JS) veya "Kaydet" butonu. Adım 4'teki "X / Y konu işaretlendi" sayacı seviyesi 0'dan büyük konuları sayar. Rapor `/plan/rapor/`, yol haritası `/plan/`; "Bunları bırakıyoruz" dersler halinde açılır listedir. Üst barda "Sınava N gün" çipi (`planner.context_processors.countdown`). Testlerde bugün `FrozenTodayMixin` ile 2027-01-04'e sabitlenir.
 - Yerel geliştirme Python 3.12 ile (`.venv` 3.12'den yeniden oluşturuldu).
 - YKS 2027 tarihleri tahmini (TYT 19 Haziran, AYT/YDT 20 Haziran 2027). ÖSYM takvimi açıklanınca `data/yks_2027.json` güncellenip `seed_exam_data` yeniden çalıştırılacak.
 

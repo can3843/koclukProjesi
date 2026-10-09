@@ -48,7 +48,8 @@ class RegisterTests(TestCase):
     def test_register_logs_in_and_redirects_to_today(self):
         response = self.post()
         self.assertRedirects(response, "/bugun/", fetch_redirect_response=False)
-        self.assertEqual(self.client.get("/bugun/").status_code, 200)
+        # a new student has not finished onboarding yet, so the app sends them to step 1
+        self.assertRedirects(self.client.get("/bugun/"), "/baslangic/1/", fetch_redirect_response=False)
         user = User.objects.get(email="elif@example.com")
         self.assertEqual(user.first_name, "Elif")
         self.assertEqual(int(self.client.session["_auth_user_id"]), user.pk)

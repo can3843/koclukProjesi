@@ -16,8 +16,8 @@
   </script>
   <link rel="stylesheet" href="{% static 'css/main.css' %}">
 </head>
-<body class="{% if user.is_authenticated %}authed{% else %}guest{% endif %}">
-{% if user.is_authenticated %}
+<body class="{% if user.is_authenticated and not onboarding_mode %}authed{% else %}guest{% endif %}">
+{% if user.is_authenticated and not onboarding_mode %}
   <div class="app">
     <aside class="sidebar">
       <a class="brand" href="{% url 'today' %}"><img src="{% static 'img/logo.svg' %}" alt="">rotam</a>
@@ -25,8 +25,10 @@
     </aside>
     <div class="main-col">
       <header class="topbar">
-        <a class="brand" href="{% url 'today' %}"><img src="{% static 'img/logo.svg' %}" alt="">rotam</a>
-        {% block topbar_chip %}{% endblock %}
+        <a class="brand" href="{% url 'today' %}"><img src="{% static 'img/logo.svg' %}" alt=""><span class="brand-text">rotam</span></a>
+        {% if exam_countdown %}
+          <span class="chip">Sınava {{ exam_countdown.days }} gün</span>{% if exam_countdown.estimated %}<span class="badge" title="Sınav tarihi henüz resmî olarak açıklanmadı">tahmini</span>{% endif %}
+        {% endif %}
         <span class="spacer"></span>
         {% include "partials/theme_toggle.html" %}
         <form method="post" action="{% url 'logout' %}">
@@ -47,7 +49,14 @@
     <a class="brand" href="{% url 'home' %}"><img src="{% static 'img/logo.svg' %}" alt="">rotam</a>
     <div class="actions">
       {% include "partials/theme_toggle.html" %}
-      <a class="btn btn-secondary" href="{% url 'login' %}">Giriş yap</a>
+      {% if user.is_authenticated %}
+        <form method="post" action="{% url 'logout' %}">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-secondary">Çıkış yap</button>
+        </form>
+      {% else %}
+        <a class="btn btn-secondary" href="{% url 'login' %}">Giriş yap</a>
+      {% endif %}
     </div>
   </header>
   <main class="guest-main">
@@ -56,5 +65,6 @@
 {% endif %}
   {% include "partials/messages.html" %}
   <script src="{% static 'js/app.js' %}" defer></script>
+  {% block scripts %}{% endblock %}
 </body>
 </html>

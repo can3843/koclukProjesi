@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% block title %}{{ step_title }} — rotam{% endblock %}
+
+{% block guest_content %}
+<div class="step-wrap">
+  <div class="progress" role="progressbar" aria-valuemin="1" aria-valuemax="5" aria-valuenow="{{ step }}" aria-label="Tanışma ilerlemesi">
+    <span style="width: {% widthratio step 5 100 %}%"></span>
+  </div>
+  <p class="step-label">Adım {{ step }} / 5 · {{ step_title }}</p>
+  {% block step %}{% endblock %}
+</div>
+{% endblock %}

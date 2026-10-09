@@ -1,0 +1,39 @@
+{% extends "onboarding/base_step.html" %}
+
+{% block step %}
+<h1>Ne zaman daha verimlisin?</h1>
+<p class="muted">En zor görevleri bu saate koymaya çalışacağız.</p>
+
+<form method="post" novalidate>
+  {% csrf_token %}
+  <div class="choice-grid">
+    {% for value, label in form.peak_time.field.choices %}
+      <label class="choice-card choice-icon">
+        <input type="radio" name="peak_time" value="{{ value }}" required{% if form.peak_time.value == value %} checked{% endif %}>
+        <span class="choice-body">
+          <span class="choice-emoji" aria-hidden="true">{% if value == "morning" %}☀️{% elif value == "noon" %}🌤️{% elif value == "evening" %}🌆{% else %}🌙{% endif %}</span>
+          <strong>{{ label }}</strong>
+        </span>
+      </label>
+    {% endfor %}
+  </div>
+  {% for error in form.peak_time.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+
+  <h2>Haftada bir dinlenme günü ister misin?</h2>
+  <p class="muted">Haftada bir gün dinlenmek, uzun vadede daha çok net getirir.</p>
+  <div class="choice-grid choice-grid-days">
+    {% for value, label in form.rest_weekday.field.choices %}
+      <label class="choice-card choice-small">
+        <input type="radio" name="rest_weekday" value="{{ value }}"{% if form.rest_weekday.value|default_if_none:""|stringformat:"s" == value %} checked{% endif %}>
+        <span class="choice-body"><strong>{{ label }}</strong></span>
+      </label>
+    {% endfor %}
+  </div>
+  {% for error in form.rest_weekday.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+
+  <div class="step-actions">
+    <a class="btn btn-secondary" href="{% url 'onboarding_step' step=2 %}">Geri</a>
+    <button type="submit" class="btn">Devam</button>
+  </div>
+</form>
+{% endblock %}

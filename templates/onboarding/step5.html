@@ -1,0 +1,62 @@
+{% extends "onboarding/base_step.html" %}
+
+{% block step %}
+<h1>Son adım: deneme ve hedef</h1>
+<p class="muted">İkisi de isteğe bağlı. Boş bırakıp planını hemen oluşturabilirsin.</p>
+
+<form method="post" novalidate>
+  {% csrf_token %}
+  {% if form.errors %}<div class="form-error" role="alert">Bazı alanlarda düzeltme gerekiyor. Aşağıdaki kırmızı mesajlara bak.</div>{% endif %}
+
+  <h2>Daha önce deneme çözdün mü?</h2>
+  <p class="muted">Çözdüysen son denemenin ders ders sonuçlarını gir; tahminlerimizi buna göre ayarlarız.</p>
+  {% for block in blocks %}
+    <details class="subject-box mock-box"{% if form.errors %} open{% endif %}>
+      <summary>
+        <span class="subject-name">{{ block.session.code }} denemesi girmek istiyorum</span>
+      </summary>
+      <div class="field">
+        <label for="{{ block.date.id_for_label }}">Deneme tarihi</label>
+        {{ block.date }}
+        {% for error in block.date.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+        <p class="field-help">Boş bırakırsan bugün sayılır.</p>
+      </div>
+      <div class="mock-grid">
+        <span class="mock-head">Ders</span><span class="mock-head">D</span><span class="mock-head">Y</span><span class="mock-head">B</span>
+        {% for item in block.subjects %}
+          <span class="mock-subject">{{ item.subject.name }} <small class="muted">/ {{ item.subject.question_count }}</small></span>
+          <span><label class="sr-only" for="{{ item.correct.id_for_label }}">{{ item.subject.name }} doğru</label>{{ item.correct }}</span>
+          <span><label class="sr-only" for="{{ item.wrong.id_for_label }}">{{ item.subject.name }} yanlış</label>{{ item.wrong }}</span>
+          <span><label class="sr-only" for="{{ item.blank.id_for_label }}">{{ item.subject.name }} boş</label>{{ item.blank }}</span>
+          {% for error in item.correct.errors %}<p class="field-error mock-error">{{ error }}</p>{% endfor %}
+        {% endfor %}
+      </div>
+      <p class="field-help">D: doğru, Y: yanlış, B: boş. Net = doğru − yanlış ÷ 4.</p>
+    </details>
+  {% endfor %}
+
+  <h2>Hedefin var mı?</h2>
+  <div class="field">
+    <label for="{{ form.target_department.id_for_label }}">Hedef bölüm</label>
+    {{ form.target_department }}
+    {% for error in form.target_department.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+  </div>
+  <div class="field-row">
+    <div class="field">
+      <label for="{{ form.target_tyt_net.id_for_label }}">Hedef TYT neti</label>
+      {{ form.target_tyt_net }}
+      {% for error in form.target_tyt_net.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+    </div>
+    <div class="field">
+      <label for="{{ form.target_ayt_net.id_for_label }}">Hedef AYT/YDT neti</label>
+      {{ form.target_ayt_net }}
+      {% for error in form.target_ayt_net.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+    </div>
+  </div>
+
+  <div class="step-actions">
+    <a class="btn btn-secondary" href="{% url 'onboarding_step' step=4 %}">Geri</a>
+    <button type="submit" class="btn">Planımı oluştur</button>
+  </div>
+</form>
+{% endblock %}

@@ -1,0 +1,36 @@
+{% extends "onboarding/base_step.html" %}
+
+{% block step %}
+<h1>Hangi sınava hazırlanıyorsun?</h1>
+
+<div class="card exam-card">
+  <div>
+    <strong>{{ exam.name }}</strong>
+    <p class="muted">{{ session.code }}: {{ session.date|date:"j F Y" }}{% if session.date_is_estimated %} <span class="badge" title="ÖSYM takvimi henüz açıklanmadı">tahmini tarih</span>{% endif %}</p>
+  </div>
+</div>
+<div class="soon-row" aria-label="Yakında eklenecek sınavlar">
+  <span class="chip chip-off">KPSS · Yakında</span>
+  <span class="chip chip-off">ALES · Yakında</span>
+  <span class="chip chip-off">DGS · Yakında</span>
+  <span class="chip chip-off">YDS · Yakında</span>
+</div>
+
+<h2>Alanın hangisi?</h2>
+<form method="post" novalidate>
+  {% csrf_token %}
+  <div class="choice-list">
+    {% for card in cards %}
+      <label class="choice-card">
+        <input type="radio" name="track" value="{{ card.track.pk }}" required{% if form.track.value == card.track.pk|stringformat:"s" %} checked{% endif %}>
+        <span class="choice-body"><strong>{{ card.track.name }}</strong><small>{{ card.summary }}</small></span>
+      </label>
+    {% endfor %}
+  </div>
+  {% for error in form.track.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+  <div class="step-actions">
+    <span></span>
+    <button type="submit" class="btn">Devam</button>
+  </div>
+</form>
+{% endblock %}

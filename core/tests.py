@@ -1,5 +1,8 @@
 from django.contrib.auth import get_user_model
 from django.test import TestCase
+from django.utils import timezone
+
+from planner.models import StudentProfile
 
 
 class HomePageTests(TestCase):
@@ -12,6 +15,7 @@ class HomePageTests(TestCase):
 
     def test_authenticated_user_is_redirected_to_today(self):
         user = get_user_model().objects.create_user("elif@example.com", "gizli-parola-123", first_name="Elif")
+        StudentProfile.objects.create(user=user, onboarding_step=5, onboarding_completed_at=timezone.now())
         self.client.force_login(user)
         self.assertRedirects(self.client.get("/"), "/bugun/", fetch_redirect_response=False)
 
@@ -23,6 +27,7 @@ class HomePageTests(TestCase):
 class TodayPlaceholderTests(TestCase):
     def test_today_page_greets_user_and_shows_tabbar(self):
         user = get_user_model().objects.create_user("elif@example.com", "gizli-parola-123", first_name="Elif")
+        StudentProfile.objects.create(user=user, onboarding_step=5, onboarding_completed_at=timezone.now())
         self.client.force_login(user)
         response = self.client.get("/bugun/")
         self.assertContains(response, "Merhaba Elif!")
