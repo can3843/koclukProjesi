@@ -810,82 +810,47 @@ Ek cümleler: en çok gelişen ders ("Paragrafta doğruluğun %8 arttı 👏"), 
 
 ## 9. Tasarım sistemi
 
-**Hedef his:** Sakin ama enerjik. Uzun saatler bakılacak bir ekran olduğu için göz yormayan; küçük başarıları kutlayan, motive eden.
+> Faz 0–7'den sonra `premium-site-upgrade` yetenek dosyasıyla yenilendi (yön: **Soft Product**). Kod yorumları İngilizce, arayüz metinleri Türkçe kalır; JS kütüphanesi ve build adımı yine yoktur.
 
-### 9.1 Renkler
+**Hedef his:** Sakin ama enerjik. Uzun saatler bakılacak bir ekran olduğu için göz yormayan; küçük başarıları kutlayan, motive eden. Yumuşak köşeler, cömert boşluk, tek bir güçlü vurgu rengi.
 
-Açık tema varsayılan; **koyu tema** sistem tercihine göre otomatik (`prefers-color-scheme`), ayarlardan elle de seçilebilir (gece çalışan öğrenciler için önemli).
+### 9.1 Token'lar (`static/css/tokens.css`)
+- Tek kaynak: dosyanın başındaki **marka ayarları** (`--tint-h`, `--brand-l/c/h`, `--r-base`, font aileleri). Geri kalan her değer bunlardan türetilir; `main.css` içinde keyfi renk, boşluk veya gölge yazılmaz.
+- Renkler **oklch**: nötrler marka tonuna (277, indigo) hafifçe boyalı; `--brand` indigo (yalnızca tek vurgu), `--accent` mercan **yalnızca** seri alevi, kutlama ve pusula iğnesi gibi sıcak vurgular içindir. Durum renkleri (`--success`, `--warning`, `--danger`) yalnızca anlamsal kullanılır ve metin için koyu "ink" karşılıkları vardır.
+- Açık tema varsayılan; koyu tema sistem tercihine göre otomatik, ayarlardan elle de seçilebilir (`data-theme`). Koyu temada zemin saf siyah değil, kenarlıklar şeffaf beyazdır.
+- Eski isimler (`--primary`, `--text`, `--border`, `--radius-lg`…) tokens.css sonunda **takma ad** olarak durur; yeni kodda yeni isimler kullanılır.
+- Kontrast `node …/premium-site-upgrade/scripts/contrast.mjs` ile ölçüldü: gövde metni ≥ 6,7:1, ikincil metin ≥ 6,4:1 (açık) ve ≥ 7,5:1 (koyu), buton metni ≥ 5,2:1.
+- Grafik serisi renkleri (`--chart-1..3`) palet doğrulayıcıyla iki tema için ayrıca denenmiştir.
 
-```css
-:root {
-  --bg: #F6F5FB;
-  --surface: #FFFFFF;
-  --surface-2: #EFEDF8;
-  --border: #E3E0F0;
-  --text: #1C1B2E;
-  --text-muted: #6B6889;
-  --primary: #5B5BD6;        /* indigo – ana renk */
-  --primary-soft: #E8E8FB;
-  --accent: #FF7A59;         /* mercan – vurgular, kutlama */
-  --success: #22A97A;
-  --warning: #E89B16;
-  --danger: #E5484D;
-  --grad-hero: linear-gradient(135deg, #5B5BD6 0%, #8E6CEF 55%, #FF7A59 100%);
-  --radius-lg: 20px;
-  --radius-md: 14px;
-  --radius-pill: 999px;
-  --shadow: 0 6px 24px rgba(40, 32, 90, 0.08);
-}
-[data-theme="dark"] {
-  --bg: #121220;
-  --surface: #1B1B2D;
-  --surface-2: #24243A;
-  --border: #2F2F48;
-  --text: #F2F1FA;
-  --text-muted: #A6A3C3;
-  --primary: #8B8BF5;
-  --primary-soft: #2A2A4A;
-  --shadow: 0 6px 24px rgba(0, 0, 0, 0.35);
-}
-```
+### 9.2 Tipografi
+- **Figtree** (Google Fonts; Türkçe karakterler `latin` + `latin-ext` alt kümeleriyle gelir), ağırlıklar 400/500/600/700/800. Yedek: `system-ui, -apple-system, "Segoe UI", sans-serif`.
+- Başlıklar 800, sıkı harf aralığı (−0,022 / −0,035em), `text-wrap: balance`; gövde 16px / 1,6. Rakamlarda `font-variant-numeric: tabular-nums` (sayaçlar ve netler zıplamasın).
 
-**Ders renkleri** (`Subject.color`, iki temada da okunur ton): Türkçe/Edebiyat mercan `#FF7A59`, Matematik indigo `#5B5BD6`, Geometri mor `#8E6CEF`, Fizik camgöbeği `#14A3C7`, Kimya yeşil `#22A97A`, Biyoloji lime `#7CB518`, Tarih amber `#E89B16`, Coğrafya kahve-turuncu `#C97B3A`, Felsefe grubu pembe `#D6589F`, Din Kültürü gri-mavi `#5C7A99`, İngilizce gök mavisi `#3B82F6`.
+### 9.3 Bileşenler
+- **Buton:** hap şeklinde, 44px yükseklik (`--control-h`), birincil butonda üst iç ışık + marka renginde yumuşak gölge, basınca `scale(0.98)`, tüm durumlar (hover, active, focus-visible, disabled, `data-loading`). Sayfada tek birincil eylem.
+- **Kart:** `--surface`, 1px şeffaf kenarlık, üst iç ışık, katmanlı gölge; tıklanabilir kartta hover'da büyüme yok, kenarlık ve gölge değişir.
+- **Input:** buton yüksekliğinde, odakta marka halesi; parola alanında göster/gizle düğmesi ve Caps Lock uyarısı (JS ile eklenir).
+- **Görev kartı:** ders renginde 4px sol şerit, ders renginde küçük tür ikonu, büyük yuvarlak onay (yapılınca `--success`).
+- **İkonlar:** emoji arayüz öğesi olarak kullanılmaz. Tek set, tek çizgi kalınlığı: `templates/partials/icons.html` içindeki satır içi SVG sprite (`{% include "partials/icon.html" with name="flame" %}`). Emoji yalnızca koç mesajı ve selamlama gibi **metin içeriğinde** kalır.
+- **Gezinti:** mobilde altta bulanık arka planlı sekme çubuğu (aktif sekmede hap vurgu), masaüstünde kenar menü; üst çubuk kaydırınca bulanık zemin + alt çizgi kazanır.
+- **Boş durumlar:** ikon kutusu + başlık + tek cümle + tek eylem. **404** markalıdır, **500** veritabanı ve statik dosyadan bağımsız tek dosyadır.
+- **Giriş/kayıt:** masaüstünde bölünmüş ekran (form + marka paneli), mobilde tek sütun.
+- **Logo:** yuvarlatılmış kare içinde pusula (beyaz kuzey iğnesi, mercan güney iğnesi). Favicon seti, `site.webmanifest` ve sosyal paylaşım görseli `static/img/` içindedir.
 
-### 9.2 Arka plan
-- Düz `--bg` zemin; sayfanın üst kısmında çok hafif, bulanık bir `--grad-hero` lekesi (opaklık ~0.12) ile canlılık. Gürültülü desen yok.
-- Karşılama sayfasında hero alanı tam `--grad-hero`.
-
-### 9.3 Tipografi
-- Font: **Manrope** (Google Fonts, Türkçe karakter desteği), ağırlıklar 400 / 600 / 800.
-- Yedek: `system-ui, -apple-system, "Segoe UI", sans-serif`.
-- Başlıklar 800, gövde 16px / 1.55 satır yüksekliği, ikincil metin `--text-muted`.
-- Rakamlarda `font-variant-numeric: tabular-nums` (sayaçlar ve netler zıplamasın).
-
-### 9.4 Bileşenler
-- **Kart:** `--surface`, `--radius-lg`, `--shadow`, 16–20px iç boşluk.
-- **Birincil buton:** hap şeklinde, `--primary`, beyaz yazı, en az 48px yükseklik; hover/aktifte hafif koyulaşma.
-- **Görev kartı:** ders renginde 4px sol şerit; 28px yuvarlak onay kutusu; işaretlenince kutu `--success` dolar, başlık soluklaşır, kısa "pop" animasyonu.
-- **Segment kontrol** (Bilmiyorum / Biraz / İyiyim): seçili segment sırasıyla `--danger`, `--warning`, `--success` tonunun yumuşak hali.
-- **İlerleme halkası:** SVG, `stroke-dasharray` ile, `--primary` → `--accent` gradyan.
-- **Bilgi kartları:** ikon + kısa metin + tek eylem; renk türe göre (bilgi `--primary-soft`, uyarı `--warning` tonu).
-- **Çip:** "Sınava 253 gün", "tahmini" rozeti.
-- **Toast:** mobilde altta (sekme çubuğunun üstünde), masaüstünde sağ üstte; 4 sn.
-- **Boş durumlar:** büyük emoji + kısa, sıcak metin + tek eylem butonu.
-- **Logo:** Basit, özgün bir pusula/rota ikonu (SVG) + "rotam" yazısı (küçük harf, 800 ağırlık).
+### 9.4 Hareket
+- Süreler `--dur-*`, eğriler `--e-out/--e-in-out/--e-in`. Yalnızca `transform` ve `opacity`.
+- Açılış sayfasında hero'nun kademeli girişi (`data-stagger`), bölümlerde kaydırmaya bağlı belirme (`.reveal`, CSS `animation-timeline`, desteklemeyen tarayıcıda içerik zaten görünür), sayfalar arası yumuşak geçiş (`@view-transition`).
+- `prefers-reduced-motion` ile tüm hareket kapanır.
 
 ### 9.5 Düzen ve erişilebilirlik
-- **Mobil öncelikli**; 360px genişlikte kusursuz.
-- Dokunma hedefleri ≥ 44×44px.
-- Kontrast WCAG AA (iki temada da).
-- Renk tek bilgi taşıyıcısı değil (segment kontrolde metin, durumlarda ikon da var).
-- `:focus-visible` halkası belirgin.
-- `prefers-reduced-motion` ile tüm animasyonlar kapanır.
-- Formlarda her alanın görünür etiketi, hata mesajı alanın altında.
+- **Mobil öncelikli**; 360px genişlikte kusursuz. Dokunma hedefleri ≥ 44×44px.
+- Renk tek bilgi taşıyıcısı değil (durumlarda simge ve metin de var). `:focus-visible` halkası belirgin. Formlarda her alanın görünür etiketi, hata mesajı alanın altında ve `role="alert"`.
+- CSS/JS bağlantılarına `?v=<sürüm>` eklenir (`ASSET_VERSION`: Vercel'de commit özeti); yeni deploy eski önbellekten sunulmaz.
 
 ### 9.6 Ses tonu
 Samimi, destekleyici, kısa; "sen" dili. Örnekler:
 - Karşılama başlığı: **"Sınavına giden en kısa rota."** Alt metin: "Kalan süreni, seviyeni ve vaktini söyle; her gün ne çalışacağını biz söyleyelim."
-- Bugün boşsa: "Bugün için görev yok. Biraz dinlen, yarın devam! 🌿"
+- Bugün boşsa: "Bugün için görev yok. Biraz dinlen, yarın devam!"
 - Görev bitti: "Bir tane daha bitti ✅"
 - Tanışma sonu: "Rotanı çizdim. Hazırsan başlayalım!"
 
@@ -941,6 +906,7 @@ rotam/
 │   ├── 404.html
 │   └── 500.html
 └── static/
+    ├── css/tokens.css           # design tokens (section 9)
     ├── css/main.css
     ├── js/app.js                # CSRF yardımcısı, toast, görev işaretleme, tema
     ├── js/onboarding.js         # kaydırıcılar, segment kontroller, otomatik kayıt
@@ -1168,6 +1134,7 @@ Her faz kendi içinde çalışır, test edilebilir ve deploy edilebilir bir duru
 - Faz 6: **Sağlamlaştırma:** hız sınırı `accounts/ratelimit.py` (kayan pencere, `DatabaseCache` tablosu `rotam_cache`; tablo `core/migrations/0006` ile `migrate` sırasında oluşur, ayrıca `createcachetable` gerekmez); giriş 15 dk'da 10 başarısız, kayıt saatte 10 deneme, hesap silme parolası aynı sınırı kullanır; engellenince 429 ve kimlik bilgisi hiç denenmez. Kayıt honeypot alanı `website`. `check --deploy` temiz (prod ayarlarıyla: `SECURE_SSL_REDIRECT`, HSTS 1 yıl + alt alan adları + preload, hepsi yalnızca `DEBUG=False`). `/bugun/` sorgu sayısı görev/konu sayısından bağımsız (kararlı durumda 18, günün ilk ziyaretinde 47; testle korunuyor); `build_engine_input` içindeki ders başına `test` sorgusu `select_related` ile giderildi. RLS: `core/rls.py` artık her tabloya "herkese kapalı" politika (`rotam_deny_all`, `FOR ALL TO PUBLIC USING (false)`) da ekliyor; Security Advisor'daki 28 "RLS Enabled No Policy" INFO bildirimi (başka uyarı yok) bu migration ile kapandı: Supabase'de 29 tablonun hepsinde RLS + politika var, Security Advisor boş. `core/migrations/0007` önbellek tablosu için RLS'yi tekrarlar.
 - Faz 7: **Pomodoro ve gerçek süre.** `Task.focus_seconds` (migration `planner/0004`, yeni tablo olmadığı için RLS migration'ı gerekmedi). Sabitler `config.py`'de (25/5/15 dk, 4 turda bir uzun mola, istek başına en fazla 4 saat). `services.add_focus_time` + `POST /gorev/<id>/sure/` (400 geçersiz, 404 başkasının görevi, 409 gelecek/atlanmış/kaçırılmış görev; yapılmış göreve son saniyeler eklenebilir). Sayaç `static/js/timer.js`: bir kerede tek görev, panel `/bugun/` altında sabit, durum `localStorage` (`rotam-timer`); süre duraklatma, faz sonu, bitirme, sayfa kapanışı (`keepalive`) ve 2 dakikada bir sunucuya gönderilir; sayfa yenilenince sayaç **duraklamış** geri gelir (kapalıyken geçen süre sayılmaz), cihaz uyursa (>2 dk boşluk) sayaç duraklar. Odak bitince mola kendiliğinden başlar, mola bitince yeni odak öğrencinin onayını bekler. Görev tamamlanır/atlanırsa sayaç kendiliğinden kapanır (`app.js` → `rotam.timer.taskChanged`). Odak süresi görev kartında, günün özetinde, `/ilerleme/` kutusunda (bu hafta + toplam), haftalık tabloda ve haftalık değerlendirmede (`stats.focus_minutes`) görünür. Plan motoru ve tempo hesabı odak süresini **kullanmaz** (testle sabitlendi). JS kapalıysa "Odaklan" düğmeleri görünmez.
 - Postgres'e özgü hata (canlıda `/bugun/` ve `/hafta/` 500 verdi, yerel SQLite testleri yakalayamadı): `select_for_update()` ile birlikte `select_related()` boş olabilen FK'leri (`exam`, `track`, `topic`) LEFT JOIN'ler ve PostgreSQL buna "FOR UPDATE cannot be applied to the nullable side of an outer join" der. Çözüm: `select_for_update(of=("self",))` (`ensure_daily_state`, `complete_task`, `undo_task`). **Kural:** satır kilitleyen sorgularda `select_related` kullanılırsa `of=("self",)` verilir; SQLite kilitlemeyi hiç uygulamadığı için bu hata yalnızca Supabase'e karşı çalışırken görünür. Yeni fazdan sonra uygulamayı bir kez Supabase'e karşı (gerekirse geri alınan bir transaction içinde) denemek iyi olur.
+- Tasarım yenilemesi (`design-upgrade` dalı, yetenek: premium-site-upgrade, yön Soft Product): token sistemi `static/css/tokens.css` (oklch, açık/koyu, eski isimler takma ad), Figtree, satır içi SVG ikon sprite'ı (emoji arayüz öğesi değil), açılış sayfası gerçek ürün önizlemesiyle, bölünmüş giriş/kayıt, parola göster/gizle + Caps Lock + gönderirken yükleme durumu, bulanık üst çubuk ve sekme çubuğu, yeni logo/favicon/manifest/OG görseli (`sharp` yalnızca geçici bir klasörde kullanıldı, projeye eklenmedi), markalı 404 ve bağımsız 500, kademeli hero girişi + kaydırmayla belirme + sayfa geçişi, `?v=` önbellek sürümü. İşlev, rota, form alanı adı ve JSON sözleşmeleri değişmedi; testler yalnızca metin işaretlemesi değiştiği yerde güncellendi (slogan artık `<em>` ile bölünüyor, odak süresi etiketi "25 dk odak"). Not: `color-mix` zemin renkleriyle karıştırılırken `in oklab` kullanılır; `in oklch` akromatik beyazla karıştırınca ton kayar (sarı kutu pembe görünür).
 - Yerel geliştirme Python 3.12 ile (`.venv` 3.12'den yeniden oluşturuldu).
 - YKS 2027 tarihleri tahmini (TYT 19 Haziran, AYT/YDT 20 Haziran 2027). ÖSYM takvimi açıklanınca `data/yks_2027.json` güncellenip `seed_exam_data` yeniden çalıştırılacak.
 

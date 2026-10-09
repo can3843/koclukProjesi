@@ -27,7 +27,7 @@ body::before {
   position: absolute;
   inset: 0 0 auto;
   height: 28rem;
-  background: radial-gradient(ellipse 55% 70% at 50% -10%, color-mix(in oklch, var(--brand) 16%, transparent), transparent 72%);
+  background: radial-gradient(ellipse 55% 70% at 50% -10%, color-mix(in oklab, var(--brand) 16%, transparent), transparent 72%);
   pointer-events: none;
   z-index: 0;
 }
@@ -72,7 +72,7 @@ img, svg { max-width: 100%; }
   width: 2.5rem; height: 2.5rem; border-radius: var(--r-md);
   background: var(--brand-soft); color: var(--brand-ink);
 }
-.icon-box-warm { background: color-mix(in oklch, var(--accent) 16%, transparent); color: var(--accent); }
+.icon-box-warm { background: color-mix(in oklab, var(--accent) 16%, transparent); color: var(--accent); }
 .icon-box-success { background: var(--success-soft); color: var(--success-ink); }
 .icon-box-warning { background: var(--warning-soft); color: var(--warning-ink); }
 .with-icon { display: inline-flex; align-items: center; gap: 0.4rem; }
@@ -100,7 +100,7 @@ img, svg { max-width: 100%; }
     inset 0 1px 0 oklch(1 0 0 / 0.20),
     inset 0 -1px 0 oklch(0 0 0 / 0.12),
     0 1px 2px oklch(0 0 0 / 0.14),
-    0 6px 16px -4px color-mix(in oklch, var(--brand) 45%, transparent);
+    0 6px 16px -4px color-mix(in oklab, var(--brand) 45%, transparent);
   transition:
     background-color var(--dur-fast) var(--e-out),
     border-color var(--dur-fast) var(--e-out),
@@ -228,7 +228,7 @@ a.card:hover, .card-interactive:hover { border-color: var(--line-strong); box-sh
   transition: background-color var(--dur-base) var(--e-out), border-color var(--dur-base) var(--e-out);
 }
 .topbar-wrap[data-scrolled="true"] {
-  background: color-mix(in oklch, var(--bg) 78%, transparent);
+  background: color-mix(in oklab, var(--bg) 78%, transparent);
   backdrop-filter: saturate(180%) blur(14px);
   -webkit-backdrop-filter: saturate(180%) blur(14px);
   border-bottom-color: var(--line);
@@ -255,7 +255,7 @@ a.card:hover, .card-interactive:hover { border-color: var(--line-strong); box-sh
   grid-template-columns: repeat(5, 1fr);
   height: var(--tabbar-h);
   padding: 0 0.25rem env(safe-area-inset-bottom);
-  background: color-mix(in oklch, var(--surface) 86%, transparent);
+  background: color-mix(in oklab, var(--surface) 86%, transparent);
   backdrop-filter: saturate(180%) blur(16px);
   -webkit-backdrop-filter: saturate(180%) blur(16px);
   border-top: 1px solid var(--line);
@@ -345,10 +345,10 @@ a.card:hover, .card-interactive:hover { border-color: var(--line-strong); box-sh
   box-shadow: var(--elev-xs);
   transition: border-color var(--dur-fast) var(--e-out), box-shadow var(--dur-fast) var(--e-out);
 }
-.field input:hover { border-color: color-mix(in oklch, var(--fg) 28%, transparent); }
+.field input:hover { border-color: color-mix(in oklab, var(--fg) 28%, transparent); }
 .field input:focus-visible { outline: none; border-color: var(--brand); box-shadow: 0 0 0 3px var(--brand-soft), var(--elev-xs); }
 .field.has-error input { border-color: var(--danger); }
-.field.has-error input:focus-visible { box-shadow: 0 0 0 3px color-mix(in oklch, var(--danger) 18%, transparent); }
+.field.has-error input:focus-visible { box-shadow: 0 0 0 3px color-mix(in oklab, var(--danger) 18%, transparent); }
 .field-error { display: flex; gap: 0.4rem; margin: 0.4rem 0 0; color: var(--danger-ink); font-size: var(--fs-sm); font-weight: 600; }
 .field-help { margin: 0.4rem 0 0; color: var(--fg-muted); font-size: var(--fs-xs); }
 .form-error {
@@ -473,7 +473,7 @@ body.guest #toasts { bottom: 1rem; }
   text-align: center;
   color: oklch(0.97 0.01 277);
   background:
-    radial-gradient(ellipse 60% 90% at 50% 0%, color-mix(in oklch, var(--brand) 55%, transparent), transparent 70%),
+    radial-gradient(ellipse 60% 90% at 50% 0%, color-mix(in oklab, var(--brand) 55%, transparent), transparent 70%),
     oklch(0.24 0.05 277);
   box-shadow: var(--elev-lg);
 }
@@ -498,7 +498,7 @@ body.guest #toasts { bottom: 1rem; }
     border-radius: var(--r-xl);
     color: oklch(0.97 0.01 277);
     background:
-      radial-gradient(ellipse 70% 55% at 70% 0%, color-mix(in oklch, var(--brand) 60%, transparent), transparent 70%),
+      radial-gradient(ellipse 70% 55% at 70% 0%, color-mix(in oklab, var(--brand) 60%, transparent), transparent 70%),
       oklch(0.24 0.05 277);
     box-shadow: var(--elev-md);
   }
@@ -1039,7 +1039,7 @@ p.with-icon, h2.with-icon, .stat-value.with-icon { display: flex; }
 /* tasks */
 .task-card { border: 1px solid var(--line); box-shadow: var(--highlight), var(--elev-sm); }
 .task-title { display: flex; align-items: flex-start; gap: 0.5rem; font-size: 1rem; font-weight: 700; letter-spacing: -0.005em; }
-.kind-icon { display: inline-grid; place-items: center; flex: none; width: 1.55rem; height: 1.55rem; margin-top: 0.05rem; border-radius: 0.5rem; background: color-mix(in oklch, var(--task-color, var(--brand)) 15%, transparent); color: color-mix(in oklch, var(--task-color, var(--brand)) 80%, var(--fg)); }
+.kind-icon { display: inline-grid; place-items: center; flex: none; width: 1.55rem; height: 1.55rem; margin-top: 0.05rem; border-radius: 0.5rem; background: color-mix(in oklab, var(--task-color, var(--brand)) 15%, transparent); color: color-mix(in oklab, var(--task-color, var(--brand)) 80%, var(--fg)); }
 .kind-icon .icon { width: 0.95rem; height: 0.95rem; }
 .task-card.is-done .kind-icon { opacity: 0.55; }
 .task-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 0 0.3rem; }
@@ -1048,13 +1048,14 @@ p.with-icon, h2.with-icon, .stat-value.with-icon { display: flex; }
 .check { background: var(--surface); border-color: var(--line-strong); color: oklch(0.99 0 0); box-shadow: var(--elev-xs); }
 .check .icon { width: 1.3rem; height: 1.3rem; stroke-width: 2.4; }
 button.check:hover { border-color: var(--brand); background: var(--brand-soft); }
-.check.is-checked { background: var(--success); border-color: var(--success); box-shadow: 0 4px 12px -2px color-mix(in oklch, var(--success) 50%, transparent); }
+.check.is-checked { background: var(--success); border-color: var(--success); box-shadow: 0 4px 12px -2px color-mix(in oklab, var(--success) 50%, transparent); }
 [data-theme="dark"] .check.is-checked { color: oklch(0.15 0.02 277); }
+.focus-btn { gap: 0.4rem; }
 .focus-btn .icon { width: 1rem; height: 1rem; }
 
 /* info cards */
-.info-card { border: 1px solid color-mix(in oklch, var(--brand) 22%, transparent); background: var(--brand-soft); align-items: center; }
-.info-warning { border-color: color-mix(in oklch, var(--warning) 40%, transparent); background: var(--warning-soft); }
+.info-card { border: 1px solid color-mix(in oklab, var(--brand) 22%, transparent); background: var(--brand-soft); align-items: center; }
+.info-warning { border-color: color-mix(in oklab, var(--warning) 40%, transparent); background: var(--warning-soft); }
 .info-icon { display: grid; place-items: center; flex: none; width: 2.25rem; height: 2.25rem; border-radius: var(--r-sm); background: var(--surface); color: var(--brand-ink); box-shadow: var(--elev-xs); }
 .info-warning .info-icon { color: var(--warning-ink); }
 .info-card p { font-size: var(--fs-sm); }
@@ -1065,7 +1066,7 @@ button.check:hover { border-color: var(--brand); background: var(--brand-soft); 
 .ring-value { stroke: var(--brand); transition: stroke-dashoffset var(--dur-slower, 600ms) var(--e-out); }
 .ring-text { fill: var(--fg); font-weight: 800; }
 .day-count { font-size: 1.2rem; }
-.celebrate { border: 1px solid color-mix(in oklch, var(--success) 35%, transparent); color: var(--success-ink); }
+.celebrate { border: 1px solid color-mix(in oklab, var(--success) 35%, transparent); color: var(--success-ink); }
 
 /* stats on the progress page */
 .stat-value { letter-spacing: var(--ls-tight); }
@@ -1088,8 +1089,8 @@ input[type="range"] { accent-color: var(--brand); }
 .subject-box { border-color: var(--line); box-shadow: var(--highlight), var(--elev-xs); }
 .btn-mini { border-color: var(--line-strong); background: var(--surface); }
 .btn-small { min-height: 2.75rem; }
-.btn-danger { background: var(--danger-ink); color: oklch(0.99 0 0); box-shadow: inset 0 1px 0 oklch(1 0 0 / 0.16), 0 6px 16px -4px color-mix(in oklch, var(--danger) 45%, transparent); }
-.btn-danger:hover { background: color-mix(in oklch, var(--danger-ink) 88%, black); }
+.btn-danger { background: var(--danger-ink); color: oklch(0.99 0 0); box-shadow: inset 0 1px 0 oklch(1 0 0 / 0.16), 0 6px 16px -4px color-mix(in oklab, var(--danger) 45%, transparent); }
+.btn-danger:hover { background: color-mix(in oklab, var(--danger-ink) 88%, black); }
 [data-theme="dark"] .btn-danger { color: oklch(0.15 0.02 277); }
 .link-btn { color: var(--fg-muted); }
 .state-in { background: var(--brand-soft); color: var(--brand-ink); }
@@ -1101,7 +1102,7 @@ input[type="range"] { accent-color: var(--brand); }
 
 /* report, roadmap, mock rows */
 .report-card h2 { margin-bottom: 0.6rem; }
-.report-good { border-color: color-mix(in oklch, var(--success) 50%, transparent); }
+.report-good { border-color: color-mix(in oklab, var(--success) 50%, transparent); }
 .timeline-item.is-current .timeline-dot { background: var(--brand); box-shadow: 0 0 0 4px var(--brand-soft); }
 .badge-here { background: var(--brand-soft); color: var(--brand-ink); }
 .range-value { color: var(--brand-ink); }

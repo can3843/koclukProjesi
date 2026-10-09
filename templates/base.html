@@ -25,8 +25,8 @@
     /* Apply the saved theme before first paint to avoid a flash. */
     try { var t = localStorage.getItem("rotam-theme"); if (t) document.documentElement.setAttribute("data-theme", t); } catch (e) {}
   </script>
-  <link rel="stylesheet" href="{% static 'css/tokens.css' %}">
-  <link rel="stylesheet" href="{% static 'css/main.css' %}">
+  <link rel="stylesheet" href="{% static 'css/tokens.css' %}?v={{ asset_v }}">
+  <link rel="stylesheet" href="{% static 'css/main.css' %}?v={{ asset_v }}">
 </head>
 <body class="{% if user.is_authenticated and not onboarding_mode %}authed{% else %}guest{% endif %}">
 {% include "partials/icons.html" %}
@@ -81,7 +81,7 @@
   </main>
 {% endif %}
   {% include "partials/messages.html" %}
-  <script src="{% static 'js/app.js' %}" defer></script>
+  <script src="{% static 'js/app.js' %}?v={{ asset_v }}" defer></script>
   {% block scripts %}{% endblock %}
 </body>
 </html>
